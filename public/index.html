@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GitHub, explained: a field guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ffffff; --fg:#09090b; --muted:#71717a; --muted-bg:#f4f4f5; --border:#e4e4e7;
+  --card:#ffffff; --accent:#2563eb; --accent-bg:#eff6ff; --accent-fg:#1e40af;
+  --ok:#16a34a; --ok-bg:#f0fdf4; --warn-bg:#fffbeb; --warn-fg:#92400e;
+  --radius:0.5rem;
+  --sans:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#09090b; --fg:#fafafa; --muted:#a1a1aa; --muted-bg:#18181b; --border:#27272a;
+    --card:#0f0f12; --accent:#60a5fa; --accent-bg:#172554; --accent-fg:#bfdbfe;
+    --ok:#4ade80; --ok-bg:#052e16; --warn-bg:#2a1d05; --warn-fg:#fcd34d;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#09090b; --fg:#fafafa; --muted:#a1a1aa; --muted-bg:#18181b; --border:#27272a;
+  --card:#0f0f12; --accent:#60a5fa; --accent-bg:#172554; --accent-fg:#bfdbfe;
+  --ok:#4ade80; --ok-bg:#052e16; --warn-bg:#2a1d05; --warn-fg:#fcd34d;
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;min-height:100%}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+code{font-family:var(--mono);font-size:.875em;background:var(--muted-bg);border:1px solid var(--border);padding:.05em .35em;border-radius:.3rem}
+pre{font-family:var(--mono);font-size:13px;line-height:1.55;background:var(--muted-bg);border:1px solid var(--border);border-radius:var(--radius);padding:.9rem 1rem;overflow-x:auto;max-width:100%}
+pre code{background:none;border:0;padding:0;font-size:inherit}
+.tbl{overflow-x:auto;max-width:100%;border:1px solid var(--border);border-radius:var(--radius);margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:.55rem .75rem;border-bottom:1px solid var(--border);vertical-align:top}
+th{font-weight:500;color:var(--muted);background:var(--muted-bg)}
+tr:last-child td{border-bottom:0}
+
+.app{display:grid;grid-template-columns:300px minmax(0,1fr);min-height:100vh}
+.side{border-right:1px solid var(--border);position:sticky;top:0;height:100vh;overflow-y:auto;padding:1.25rem 1rem 2rem;background:var(--bg)}
+.brand{display:flex;align-items:center;gap:.6rem;font-weight:600;letter-spacing:-.01em;text-decoration:none;color:var(--fg);margin-bottom:1rem}
+.brand-mark{width:28px;height:28px;border-radius:.4rem;background:var(--fg);color:var(--bg);display:grid;place-items:center;font-family:var(--mono);font-size:13px}
+.search{width:100%;height:36px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--fg);padding:0 .75rem;font:inherit;font-size:14px}
+.progress{margin:1rem 0 .5rem;font-size:13px;color:var(--muted)}
+.bar{height:6px;background:var(--muted-bg);border-radius:99px;overflow:hidden;margin-top:.35rem}
+.bar>span{display:block;height:100%;background:var(--fg);width:0;transition:width .3s}
+.nav-part{margin-top:1.1rem}
+.nav-part>h3{font-size:12px;font-weight:500;color:var(--muted);margin:0 0 .3rem .5rem;letter-spacing:.01em}
+.nav-part ol{list-style:none;margin:0;padding:0}
+.nav-part a{display:flex;gap:.5rem;align-items:baseline;padding:.3rem .5rem;border-radius:.4rem;text-decoration:none;color:var(--fg);font-size:14px;line-height:1.35}
+.nav-part a:hover{background:var(--muted-bg)}
+.nav-part a[aria-current="page"]{background:var(--muted-bg);font-weight:500}
+.nav-part a .dot{flex:none;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--border);transform:translateY(-1px)}
+.nav-part a.done .dot{background:var(--ok);border-color:var(--ok)}
+.nav-empty{font-size:14px;color:var(--muted);padding:.5rem}
+.btn.side-close{display:none}
+body.menu-open{overflow:hidden}
+
+.top{display:none;position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--border);padding:.6rem 1rem;padding-top:calc(.6rem + env(safe-area-inset-top,0px));align-items:center;gap:.75rem;margin-top:calc(-1 * env(safe-area-inset-top,0px))}
+.btn{height:36px;padding:0 .9rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--fg);font:inherit;font-size:14px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem}
+.btn:hover{background:var(--muted-bg)}
+.btn.primary{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.btn.primary:hover{opacity:.9}
+.btn.is-done{background:var(--ok-bg);color:var(--ok);border-color:var(--ok)}
+
+main{padding:2.5rem clamp(1rem,5vw,4rem) 4rem;min-width:0}
+.content{max-width:44rem}
+.crumb{font-size:13px;color:var(--muted);margin-bottom:.4rem}
+h1{font-size:clamp(2rem,5vw,2.9rem);line-height:1.08;letter-spacing:-.035em;font-weight:600;margin:0 0 1rem}
+h2.ch-title{font-size:clamp(1.6rem,4vw,2.1rem);line-height:1.15;letter-spacing:-.025em;font-weight:600;margin:0 0 .75rem}
+h4{font-size:14px;font-weight:600;margin:0 0 .35rem}
+.lead{font-size:1.125rem;color:var(--muted);margin:0 0 1.5rem;line-height:1.55}
+article.ch{display:none}
+article.ch.show{display:block}
+article.ch ul{padding-left:1.2rem}
+article.ch li{margin:.25rem 0}
+aside{border:1px solid var(--border);border-radius:var(--radius);padding:.9rem 1rem;margin:1.25rem 0}
+aside p{margin:0}
+aside p+p{margin-top:.5rem}
+aside.yours{background:var(--accent-bg);border-color:transparent;color:var(--accent-fg)}
+aside.yours code{background:transparent;border-color:currentColor}
+aside.say{background:var(--muted-bg);border-color:transparent}
+aside.say p{font-style:italic}
+aside.warn{background:var(--warn-bg);border-color:transparent;color:var(--warn-fg)}
+.ch-actions{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:space-between;align-items:center;margin-top:2.5rem;padding-top:1.25rem;border-top:1px solid var(--border)}
+.ch-actions .nav-btns{display:flex;gap:.5rem}
+
+.journey{list-style:none;padding:0;margin:1.75rem 0 2rem;display:grid;gap:0}
+.journey li{display:grid;grid-template-columns:2.25rem minmax(0,1fr);gap:.9rem;position:relative;padding-bottom:1rem}
+.journey li::before{content:"";position:absolute;left:1.1rem;top:2.25rem;bottom:0;width:1px;background:var(--border)}
+.journey li:last-child::before{display:none}
+.journey .n{width:2.25rem;height:2.25rem;border-radius:50%;border:1px solid var(--border);display:grid;place-items:center;font-family:var(--mono);font-size:13px;background:var(--bg);position:relative}
+.journey b{font-weight:600}
+.journey a{font-size:14px}
+.journey p{margin:.1rem 0 0;color:var(--muted);font-size:15px}
+.parts{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:.75rem;margin:1.25rem 0}
+.part-card{border:1px solid var(--border);border-radius:calc(var(--radius) + .25rem);padding:1rem;text-decoration:none;color:var(--fg);display:block}
+.part-card:hover{background:var(--muted-bg)}
+.part-card strong{display:block;font-weight:600}
+.part-card span{font-size:13px;color:var(--muted)}
+.gloss-filter{margin:.5rem 0 1rem}
+dl.gloss{margin:0}
+dl.gloss dt{font-weight:600;margin-top:.9rem}
+dl.gloss dd{margin:.1rem 0 0;color:var(--muted)}
+
+@media (max-width:860px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .top{display:flex}
+  .side{position:fixed;inset:0 auto 0 0;width:min(86vw,320px);z-index:10;transform:translateX(-100%);transition:transform .2s;height:100%;height:100dvh;padding-top:calc(1.25rem + env(safe-area-inset-top,0px));padding-bottom:calc(2rem + env(safe-area-inset-bottom,0px));box-shadow:none}
+  .side.open{transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.4)}
+  .btn.side-close{display:inline-flex;position:absolute;top:calc(1rem + env(safe-area-inset-top,0px));right:.75rem;width:36px;padding:0;justify-content:center;font-size:18px;line-height:1}
+  main{padding-top:1.5rem}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<style>
+.fig{margin:1.25rem 0;padding:1rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--card)}
+.fig svg{display:block;width:100%;max-width:560px;height:auto;margin:0 auto}
+.fig figcaption{margin-top:.6rem;font-size:13px;color:var(--muted);text-align:center}
+.fig .box{fill:var(--muted-bg);stroke:var(--border)}
+.fig .box-accent{fill:var(--accent-bg);stroke:var(--accent)}
+.fig text{fill:var(--fg);font-family:var(--sans);font-size:12px}
+.fig .t-muted{fill:var(--muted);font-size:11px}
+.fig .t-accent{fill:var(--accent-fg);font-weight:600}
+.fig .t-head{font-weight:600}
+.fig .arrow{stroke:var(--muted);fill:none;stroke-width:1.5}
+</style>
+</head>
+<body>
+<div class="app">
+<nav class="side" id="side" aria-label="Chapters">
+  <button class="btn side-close" id="side-close" aria-label="Close chapters menu">&times;</button>
+  <a class="brand" href="#home"><span class="brand-mark">gh</span>GitHub, explained</a>
+  <input class="search" id="search" type="search" placeholder="Search chapters, e.g. rebase" aria-label="Search chapters">
+  <div class="progress"><span id="prog-text">0 of 0 chapters read</span><div class="bar"><span id="prog-bar"></span></div></div>
+  <div id="toc"></div>
+</nav>
+<div>
+<header class="top">
+  <button class="btn" id="menu" aria-controls="side" aria-expanded="false">Chapters</button>
+  <span id="top-title" style="font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+</header>
+<main id="main">
+<div class="content" id="content">
+
+<section id="home-view">
+  <h1>GitHub, explained in plain words</h1>
+  <p class="lead">More than forty short chapters. They teach you how to use Git and GitHub properly. Use them on your own, in a team, or with an AI helper that writes code for you.</p>
+  <p>Every chapter is short. Hard words are explained the first time they appear. When a hard word comes back later, a short reminder sits next to it in brackets. Most chapters have a small diagram. Most end with a sentence you can say out loud.</p>
+  <p>Start with the journey below. It is the loop almost every change goes through. It takes you from an idea on your laptop to code that is live.</p>
+  <ol class="journey">
+    <li><span class="n">1</span><div><b>Start with a repository</b><p>A project folder that remembers its whole history. A copy lives on GitHub.</p><a href="#git-vs-github">Git versus GitHub</a></div></li>
+    <li><span class="n">2</span><div><b>Make a branch</b><p>A safe side copy. You can experiment without breaking the working version.</p><a href="#branches">Branches</a></div></li>
+    <li><span class="n">3</span><div><b>Save your work in commits</b><p>A commit is a saved snapshot. You can always go back to it.</p><a href="#commits">Making good commits</a></div></li>
+    <li><span class="n">4</span><div><b>Push to GitHub</b><p>Push means upload. Now others can see your branch, and it is backed up.</p><a href="#remotes">Remotes: push, pull and fetch</a></div></li>
+    <li><span class="n">5</span><div><b>Open a pull request</b><p>A pull request is a message saying: "please add my branch to main".</p><a href="#prs">Pull requests</a></div></li>
+    <li><span class="n">6</span><div><b>Checks run and people review</b><p>Robots run your tests. People read your code. Both catch mistakes early.</p><a href="#actions">GitHub Actions</a></div></li>
+    <li><span class="n">7</span><div><b>Merge and ship</b><p>Merge means combine. Your change joins main and can go live.</p><a href="#releases">Tags, releases and versions</a></div></li>
+  </ol>
+  <h2 class="ch-title" style="font-size:1.4rem">The parts</h2>
+  <div class="parts" id="parts"></div>
+  <p style="color:var(--muted);font-size:14px">Your progress is saved in this browser. Mark a chapter as read at the bottom of each page.</p>
+</section>
+
+<article class="ch" id="git-vs-github" data-part="Start here" data-title="Git versus GitHub">
+
+<p class="lead">Git tracks your code's history. GitHub is a website that stores your Git projects.</p>
+<p><b>Git</b> is a free tool on your computer. It remembers every version of your files. You can see what changed and when. You can go back if something breaks. It works offline.</p>
+<p><b>GitHub</b> is a website. It keeps a copy of your Git project online. It also adds teamwork tools. You can track tasks, review each other's code and run automatic checks.</p>
+<p>Other sites do the same job: GitLab, Bitbucket and Codeberg. They all use Git. Only the extra tools differ.</p>
+<p>Why bother, even if you work alone? You get two things.</p>
+<ul>
+<li><b>History.</b> An undo button for your whole project, not just one file.</li>
+<li><b>Backup.</b> If your laptop dies, your code is still on GitHub.</li>
+</ul>
+<p>In a team, you also get one shared place where everyone's work meets.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 140" role="img" aria-label="Diagram: Git runs on your laptop, GitHub is a website that holds a shared copy">
+<defs><marker id="m1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="42" width="249" height="64" rx="8"/><text x="134" y="62" text-anchor="middle">Git</text><text x="134" y="78" text-anchor="middle" class="t-muted">tool on your computer</text><text x="134" y="94" text-anchor="middle" class="t-muted">tracks history</text><line class="arrow" x1="262" y1="74" x2="298" y2="74" marker-end="url(#m1)"/><text x="280" y="34" text-anchor="middle" class="t-accent">push / pull</text><rect class="box-accent" x="301" y="42" width="249" height="64" rx="8"/><text x="425" y="62" text-anchor="middle">GitHub</text><text x="425" y="78" text-anchor="middle" class="t-muted">website, shared copy</text><text x="425" y="94" text-anchor="middle" class="t-muted">teamwork tools</text>
+</svg>
+<figcaption>Git does the tracking on your computer. GitHub keeps a shared copy online.</figcaption>
+</figure>
+<p>Your computer and GitHub only talk when you ask. You send work with <b>push</b> (upload). You get work with <b>pull</b> (download). Both come back in later chapters.</p>
+<aside class="yours"><h4>In your project</h4><p>Ever saved files as <code>final</code>, <code>final-v2</code> and <code>final-REALLY</code>? Git replaces all of that with one folder and a searchable history.</p></aside><aside class="say"><h4>Say it like this</h4><p>Git is the tool. GitHub is where we host it. I can save offline and upload later.</p></aside>
+</article>
+<article class="ch" id="nouns" data-part="Start here" data-title="Repo, commit, branch, remote">
+
+<p class="lead">Four words you will hear in almost every Git sentence.</p>
+<p>A <b>repository</b> (or <b>repo</b>) is a project folder plus its full history. Git hides the history in a folder called <code>.git</code>. Never edit that folder by hand.</p>
+<p>A <b>commit</b> is a saved snapshot of your project. It has a short message that says what changed. It also has an author and a time. Each commit gets an ID called a <b>hash</b>, like <code>a1b2c3d</code>. Commits link together in a chain. That chain is your history.</p>
+<p>A <b>branch</b> is a separate line of work. Technically it is a movable label on a commit. The main line is usually called <code>main</code>. You make other branches for new features and fixes.</p>
+<p>A <b>remote</b> is a copy of the repo somewhere else, usually on GitHub. The main remote is normally named <code>origin</code>. The copy on your computer is the <b>local</b> repo.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 145" role="img" aria-label="Diagram: a repo is a chain of commits A to D; a branch is a label on one commit; the remote is a copy on GitHub">
+<defs><marker id="mn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="20" width="330" height="110" rx="8"/><text x="22" y="40" class="t-head">Repository (repo)</text><text x="22" y="58" class="t-muted">a project folder + its whole history</text><circle cx="50" cy="95" r="15" class="box"/><text x="50" y="99" text-anchor="middle">A</text><circle cx="120" cy="95" r="15" class="box"/><text x="120" y="99" text-anchor="middle">B</text><circle cx="190" cy="95" r="15" class="box"/><text x="190" y="99" text-anchor="middle">C</text><circle cx="260" cy="95" r="15" class="box"/><text x="260" y="99" text-anchor="middle">D</text><line class="arrow" x1="68" y1="95" x2="102" y2="95" marker-end="url(#mn)"/><line class="arrow" x1="138" y1="95" x2="172" y2="95" marker-end="url(#mn)"/><line class="arrow" x1="208" y1="95" x2="242" y2="95" marker-end="url(#mn)"/><text x="22" y="124" class="t-muted">each circle is a commit (a saved snapshot)</text><rect class="box-accent" x="375" y="20" width="175" height="50" rx="8"/><text x="462" y="41" text-anchor="middle">Branch: main</text><text x="462" y="57" text-anchor="middle" class="t-muted">a label on a commit</text><rect class="box" x="375" y="80" width="175" height="50" rx="8"/><text x="462" y="101" text-anchor="middle">Remote: origin</text><text x="462" y="117" text-anchor="middle" class="t-muted">a copy on GitHub</text><line class="arrow" x1="372" y1="45" x2="274" y2="86" marker-end="url(#mn)"/>
+</svg>
+<figcaption>A repo is a chain of commits. A branch is a label on one of them. A remote is another copy.</figcaption>
+</figure>
+<p>Two more words. To <b>clone</b> is to download a full copy of a repo. <b>HEAD</b> means "the commit you are on right now".</p>
+<aside class="say"><h4>Say it like this</h4><p>I cloned the repo, made a branch, saved two commits and pushed it to origin.</p></aside>
+</article>
+<article class="ch" id="setup" data-part="Start here" data-title="Accounts, security and first-time setup">
+
+<p class="lead">Twenty minutes of setup now saves you from lockouts and awkward mistakes later.</p>
+<p><b>Step 1: turn on 2FA.</b> 2FA (two-factor authentication) means you need a password and a second proof to log in. Your account can publish code that others run, so protect it. Use a <b>passkey</b> (a login stored on your phone or laptop) or an authenticator app. Save the recovery codes in a password manager.</p>
+<p><b>Step 2: install Git and tell it who you are.</b> Every commit (saved snapshot) carries your name and email.</p>
+<pre><code>git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+git config --global init.defaultBranch main</code></pre>
+<p>Do not want your real email in public? GitHub gives you a private one. Go to Settings, then Emails. Tick "Keep my email addresses private". Use the address it shows (it ends in <code>@users.noreply.github.com</code>).</p>
+<p><b>Step 3: let your computer prove who it is.</b> GitHub does not accept your password for Git commands. Pick one way:</p>
+<ul>
+<li><b>GitHub CLI.</b> Run <code>gh auth login</code>. It signs you in through the browser. This is the easiest.</li>
+<li><b>HTTPS with a credential manager.</b> Git for Windows and Mac includes one. It opens a browser sign-in once.</li>
+<li><b>SSH key.</b> You make a pair of files with <code>ssh-keygen -t ed25519</code>. One file is private and stays on your computer. One is public. You paste the public one into GitHub under Settings, then SSH and GPG keys. After that you never type a password.</li>
+</ul>
+<p>A <b>personal access token</b> (PAT) is like a password with limited powers. Scripts use it. Never paste it into code, chats or screenshots.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 140" role="img" aria-label="Diagram: your laptop proves its identity to GitHub using an SSH key, a token or a browser sign-in">
+<defs><marker id="m2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="42" width="152" height="64" rx="8"/><text x="86" y="78" text-anchor="middle">Your laptop</text><line class="arrow" x1="165" y1="74" x2="201" y2="74" marker-end="url(#m2)"/><text x="183" y="34" text-anchor="middle" class="t-accent">sends</text><rect class="box" x="204" y="42" width="152" height="64" rx="8"/><text x="280" y="62" text-anchor="middle">Proof</text><text x="280" y="78" text-anchor="middle" class="t-muted">SSH key, token</text><text x="280" y="94" text-anchor="middle" class="t-muted">or browser sign-in</text><line class="arrow" x1="359" y1="74" x2="395" y2="74" marker-end="url(#m2)"/><text x="377" y="34" text-anchor="middle" class="t-accent">checks</text><rect class="box-accent" x="398" y="42" width="152" height="64" rx="8"/><text x="474" y="70" text-anchor="middle">GitHub</text><text x="474" y="86" text-anchor="middle" class="t-muted">accepts you</text>
+</svg>
+<figcaption>Three ways your laptop can prove who it is. Pick one.</figcaption>
+</figure><aside class="warn"><h4>Careful</h4><p>Anything that can push to your account can change your code. Keep tokens out of your repo, and do not show them on screen shares.</p></aside><aside class="say"><h4>Say it like this</h4><p>I have 2FA and an SSH key set up. My commits use the noreply address, so my email stays private.</p></aside>
+</article>
+<article class="ch" id="first-repo" data-part="Git on your machine" data-title="Your first repository">
+
+<p class="lead">You can start two ways: make a new repo, or copy one that already exists.</p>
+<p><b>Way 1: start from scratch.</b> Go into your project folder. Turn it into a repo:</p>
+<pre><code>cd my-project
+git init
+git add .
+git commit -m "Initial commit"</code></pre>
+<p>Now you have a repo with one commit (saved snapshot). To put it on GitHub, first create an empty repo on the website. Do not add a README there. Then connect and upload:</p>
+<pre><code>git remote add origin git@github.com:you/my-project.git
+git push -u origin main</code></pre>
+<p>The <code>-u</code> tells Git "remember this link". Later, plain <code>git push</code> just works. The GitHub CLI can do all of this in one step: <code>gh repo create</code>.</p>
+<p><b>Way 2: copy an existing repo.</b> Use <b>clone</b> (download a full copy, history included). It also sets up <code>origin</code> for you:</p>
+<pre><code>git clone git@github.com:someone/their-project.git</code></pre>
+<p>On any repo page, the green <b>Code</b> button shows the address to copy.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 145" role="img" aria-label="Flowchart: new project uses git init then connect and push; existing project uses git clone; both end with a local repo linked to GitHub">
+<defs><marker id="m3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="15" width="150" height="44" rx="8"/><text x="85" y="33" text-anchor="middle">New project</text><text x="85" y="49" text-anchor="middle" class="t-muted">git init</text><rect class="box" x="10" y="85" width="150" height="44" rx="8"/><text x="85" y="103" text-anchor="middle">Existing project</text><text x="85" y="119" text-anchor="middle" class="t-muted">git clone</text><rect class="box" x="215" y="15" width="130" height="44" rx="8"/><text x="280" y="33" text-anchor="middle">Connect to GitHub</text><text x="280" y="49" text-anchor="middle" class="t-muted">git remote add</text><rect class="box-accent" x="400" y="50" width="150" height="50" rx="8"/><text x="475" y="71" text-anchor="middle">Local repo</text><text x="475" y="87" text-anchor="middle" class="t-muted">linked to GitHub</text><line class="arrow" x1="163" y1="37" x2="212" y2="37" marker-end="url(#m3)"/><line class="arrow" x1="348" y1="37" x2="420" y2="48" marker-end="url(#m3)"/><line class="arrow" x1="163" y1="107" x2="415" y2="95" marker-end="url(#m3)"/><text x="290" y="125" text-anchor="middle" class="t-muted">clone does the linking for you</text>
+</svg>
+<figcaption>Two starting points, one result: a local repo linked to GitHub.</figcaption>
+</figure><aside class="yours"><h4>In your project</h4><p>Make the GitHub repo on day one, even for a weekend experiment. It is free, private repos are fine, and your first working version is already backed up.</p></aside><aside class="say"><h4>Say it like this</h4><p>Just clone it and run the install. The README says how.</p></aside>
+</article>
+<article class="ch" id="areas" data-part="Git on your machine" data-title="Working tree, staging area and commits">
+
+<p class="lead">Git has a waiting room between your edits and your history. Knowing it clears up most early confusion.</p>
+<p>Your changes live in three places. They move through them in order.</p>
+<ul>
+<li>The <b>working tree</b> is your actual files. Edits here are not saved anywhere yet.</li>
+<li>The <b>staging area</b> (also called the <b>index</b>) is a list of changes you picked for the next commit. <code>git add</code> puts changes there.</li>
+<li>The <b>repository</b> holds your saved snapshots. <code>git commit</code> turns the staged changes into a commit.</li>
+</ul>
+<p>Why the middle step? So one commit can hold one idea. Say you fixed a bug and also tidied a heading. Stage and commit the bug fix first. Then do the tidy-up as a second commit.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 140" role="img" aria-label="Diagram: changes move from working tree to staging area with git add, to local repo with git commit, to GitHub with git push">
+<defs><marker id="m4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="42" width="104" height="64" rx="8"/><text x="62" y="70" text-anchor="middle">Working tree</text><text x="62" y="86" text-anchor="middle" class="t-muted">your edits</text><line class="arrow" x1="116" y1="74" x2="152" y2="74" marker-end="url(#m4)"/><text x="134" y="34" text-anchor="middle" class="t-accent">git add</text><rect class="box" x="156" y="42" width="104" height="64" rx="8"/><text x="208" y="70" text-anchor="middle">Staging area</text><text x="208" y="86" text-anchor="middle" class="t-muted">next commit</text><line class="arrow" x1="262" y1="74" x2="298" y2="74" marker-end="url(#m4)"/><text x="280" y="34" text-anchor="middle" class="t-accent">git commit</text><rect class="box" x="301" y="42" width="104" height="64" rx="8"/><text x="353" y="70" text-anchor="middle">Local repo</text><text x="353" y="86" text-anchor="middle" class="t-muted">history</text><line class="arrow" x1="408" y1="74" x2="444" y2="74" marker-end="url(#m4)"/><text x="426" y="34" text-anchor="middle" class="t-accent">git push</text><rect class="box-accent" x="446" y="42" width="104" height="64" rx="8"/><text x="498" y="70" text-anchor="middle">GitHub</text><text x="498" y="86" text-anchor="middle" class="t-muted">shared copy</text>
+</svg>
+<figcaption>A change travels left to right. Only the last arrow uses the internet.</figcaption>
+</figure>
+<p>Two handy extras. <code>git add -p</code> lets you pick single chunks inside a file. <code>git commit -a</code> skips staging for files Git already knows. It ignores brand-new files.</p>
+<aside class="say"><h4>Say it like this</h4><p>Stage the bug fix on its own. I do not want the formatting changes in the same commit.</p></aside>
+</article>
+<article class="ch" id="commits" data-part="Git on your machine" data-title="Making good commits">
+
+<p class="lead">A good commit is small, does one thing, and has a clear message.</p>
+<p><b>Commit often.</b> A commit (saved snapshot) is a save point. It is cheap. Small commits are easy to read, easy to undo and easy to search when hunting a bug.</p>
+<p><b>One idea per commit.</b> People call this an <b>atomic</b> commit. If your description needs the word "and", it is probably two commits.</p>
+<p><b>Write the message for a stranger.</b> Use a short first line, about 50 characters. Write it as a command: "Fix login redirect", not "Fixed". If needed, add a blank line and a longer note about <em>why</em>. The diff (the list of changed lines) already shows <em>what</em> changed. The message should explain why.</p>
+<pre><code>git commit -m "Fix redirect loop after login" -m "The cookie was set after the redirect, so the next request looked logged out."</code></pre>
+<p>Many teams use <b>Conventional Commits</b>. That means each message starts with a type: <code>feat:</code> (new feature), <code>fix:</code> (bug fix), <code>docs:</code> (docs only) or <code>chore:</code> (housekeeping). It makes history easy to scan. Being consistent matters more than the exact style.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 140" role="img" aria-label="Two columns comparing a bad commit (one giant commit called stuff) with good commits (three small commits with clear messages)">
+<rect class="box" x="10" y="15" width="250" height="110" rx="8"/><text x="135" y="38" text-anchor="middle" class="t-head">Hard to use</text><rect class="box" x="70" y="55" width="130" height="44" rx="8"/><text x="135" y="73" text-anchor="middle">stuff</text><text x="135" y="89" text-anchor="middle" class="t-muted">40 files changed</text><rect class="box-accent" x="300" y="15" width="250" height="110" rx="8"/><text x="425" y="38" text-anchor="middle" class="t-head">Easy to use</text><rect class="box" x="315" y="52" width="220" height="20" rx="8"/><text x="425" y="66" text-anchor="middle">fix: login redirect</text><rect class="box" x="315" y="76" width="220" height="20" rx="8"/><text x="425" y="90" text-anchor="middle">style: tidy header</text><rect class="box" x="315" y="100" width="220" height="20" rx="8"/><text x="425" y="114" text-anchor="middle">docs: update README</text>
+</svg>
+<figcaption>Small commits with clear names beat one giant commit.</figcaption>
+</figure>
+<ul>
+<li><b>Do not commit broken code</b> to a shared branch. Test first.</li>
+<li><b>Do not mix tidying with logic.</b> Reformatting in the same commit as a fix hides the fix.</li>
+<li><b>Fix the last commit</b> with <code>git commit --amend</code>. Only do this before you push (upload).</li>
+</ul>
+<aside class="yours"><h4>In your project</h4><p>Commit every time something works, even a tiny thing. If an AI tool or a late-night edit breaks your project, you are one command from the last good state.</p></aside><aside class="say"><h4>Say it like this</h4><p>Can you split that into two commits? The refactor and the bug fix are tangled together.</p></aside>
+</article>
+<article class="ch" id="looking" data-part="Git on your machine" data-title="Looking around: status, diff and log">
+
+<p class="lead">Three commands let you look before you change anything. They never alter your files.</p>
+<pre><code>git status        # what changed, what is staged, which branch am I on
+git diff          # exact line changes not yet staged
+git diff --staged # exact line changes that are staged
+git log --oneline --graph --decorate -15</code></pre>
+<p><code>git status</code> is the one to run all the time. It also tells you what to do next. For example: "Your branch is ahead of origin/main by 2 commits".</p>
+<p>A <b>diff</b> shows changes line by line. A line starting with <code>-</code> was removed. A line starting with <code>+</code> was added. Read your own diff before every commit. It catches leftovers like debug prints, stray files and secrets.</p>
+<p><code>git log</code> lists commits, newest first. The options above show one line each and draw the branch shape. Add a filename to see the history of one file.</p>
+<p>Two detective tools. <code>git blame file</code> shows who last changed each line. <code>git show a1b2c3d</code> shows one commit in full. On GitHub, the <b>History</b> and <b>Blame</b> buttons on a file do the same.</p>
+<pre><code>- const title = "Welcome back";
++ const title = "Hello again";</code></pre>
+<p>That is how a diff looks. One line out, one line in.</p>
+<aside class="say"><h4>Say it like this</h4><p>Run git status and git diff first. I want to see what changed before we commit.</p></aside>
+</article>
+<article class="ch" id="undo" data-part="Git on your machine" data-title="Undoing things safely">
+
+<p class="lead">Almost everything in Git can be undone. You just need the right undo for your situation.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 140" role="img" aria-label="Flowchart: if the change is not committed use restore; if committed but not pushed use amend or reset; if pushed use revert">
+<defs><marker id="mu" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box-accent" x="200" y="8" width="160" height="40" rx="8"/><text x="280" y="24" text-anchor="middle">Is the change</text><text x="280" y="40" text-anchor="middle" class="t-muted">saved in a commit?</text><rect class="box" x="20" y="85" width="150" height="40" rx="8"/><text x="95" y="101" text-anchor="middle">No: restore</text><text x="95" y="117" text-anchor="middle" class="t-muted">git restore file</text><rect class="box" x="205" y="85" width="150" height="40" rx="8"/><text x="280" y="101" text-anchor="middle">Yes, not pushed: amend</text><text x="280" y="117" text-anchor="middle" class="t-muted">or reset</text><rect class="box" x="390" y="85" width="160" height="40" rx="8"/><text x="470" y="101" text-anchor="middle">Yes, pushed: revert</text><text x="470" y="117" text-anchor="middle" class="t-muted">git revert hash</text><line class="arrow" x1="215" y1="48" x2="110" y2="83" marker-end="url(#mu)"/><line class="arrow" x1="280" y1="48" x2="280" y2="83" marker-end="url(#mu)"/><line class="arrow" x1="345" y1="48" x2="460" y2="83" marker-end="url(#mu)"/>
+</svg>
+<figcaption>Pick your undo by asking: is it saved in a commit, and is it uploaded yet?</figcaption>
+</figure><div class="tbl"><table>
+<tr><th>Situation</th><th>Command</th></tr>
+<tr><td>Throw away edits to a file (not staged)</td><td><code>git restore file</code></td></tr>
+<tr><td>Unstage a file but keep the edits</td><td><code>git restore --staged file</code></td></tr>
+<tr><td>Fix the last commit (not pushed yet)</td><td><code>git commit --amend</code></td></tr>
+<tr><td>Undo a commit that is already shared</td><td><code>git revert a1b2c3d</code></td></tr>
+<tr><td>Move a local branch back, keep the changes</td><td><code>git reset --soft HEAD~1</code></td></tr>
+<tr><td>Move a local branch back, delete the changes</td><td><code>git reset --hard a1b2c3d</code></td></tr>
+<tr><td>Find a commit you think you lost</td><td><code>git reflog</code></td></tr>
+</table></div>
+<p>The big one is <b>revert versus reset</b>.</p>
+<ul>
+<li><code>git revert</code> adds a <em>new</em> commit that cancels an old one. History stays intact. It is safe on shared branches.</li>
+<li><code>git reset</code> <em>moves the branch back</em>. With <code>--hard</code> it also deletes work. Use it only on commits nobody else has.</li>
+</ul>
+<p>Your safety net is the <b>reflog</b>. It is a private diary of everywhere HEAD (the commit you are on) has been. If you reset too far, run <code>git reflog</code>. Find the commit from a minute ago. Then run <code>git reset --hard HEAD@{1}</code> to return.</p>
+<p>Commits are very hard to lose. Edits you never committed are gone for good. That is one more reason to commit often.</p>
+<aside class="warn"><h4>Careful</h4><p><code>git restore file</code> and <code>git reset --hard</code> delete uncommitted work for good. Run <code>git status</code> first and be sure.</p></aside><aside class="say"><h4>Say it like this</h4><p>Do not reset main. It is already pushed. Revert the commit so history stays honest.</p></aside>
+</article>
+<article class="ch" id="gitignore" data-part="Git on your machine" data-title=".gitignore and files that don&#x27;t belong">
+
+<p class="lead">Some files should never go in a repo: secrets, downloaded libraries, build output and editor clutter.</p>
+<p>A file named <code>.gitignore</code> lists patterns. Git pretends those files do not exist. Here is a typical one:</p>
+<pre><code># downloaded libraries and build output
+node_modules/
+dist/
+.next/
+
+# secrets and local settings
+.env
+.env.*
+!.env.example
+
+# computer and editor noise
+.DS_Store
+.vscode/</code></pre>
+<p>Why these?</p>
+<ul>
+<li><b>Libraries</b> (<code>node_modules</code>) are huge. You can download them again from <code>package.json</code>.</li>
+<li><b>Build output</b> can be regenerated.</li>
+<li><b>Secrets</b> (passwords and API keys) must never be in a repo. The next chapter explains why.</li>
+<li>The line <code>!.env.example</code> is an exception. It keeps a template file with fake values. Teammates see which settings they need.</li>
+</ul>
+<figure class="fig">
+<svg viewBox="0 0 560 140" role="img" aria-label="Diagram: all your files pass through the .gitignore filter; ignored files stay on your laptop and the rest go into Git">
+<defs><marker id="m5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="42" width="152" height="64" rx="8"/><text x="86" y="78" text-anchor="middle">All your files</text><line class="arrow" x1="165" y1="74" x2="201" y2="74" marker-end="url(#m5)"/><rect class="box-accent" x="204" y="42" width="152" height="64" rx="8"/><text x="280" y="70" text-anchor="middle">.gitignore</text><text x="280" y="86" text-anchor="middle" class="t-muted">the filter</text><line class="arrow" x1="359" y1="74" x2="395" y2="74" marker-end="url(#m5)"/><text x="377" y="34" text-anchor="middle" class="t-accent">allowed</text><rect class="box" x="398" y="42" width="152" height="64" rx="8"/><text x="474" y="70" text-anchor="middle">Tracked by Git</text><text x="474" y="86" text-anchor="middle" class="t-muted">goes in commits</text>
+</svg>
+<figcaption>The .gitignore file is a filter. Ignored files stay on your computer only.</figcaption>
+</figure>
+<p>GitHub can create a <code>.gitignore</code> for your language when you make a repo. The <code>github/gitignore</code> project has templates for everything.</p>
+<aside class="warn"><h4>Careful</h4><p><code>.gitignore</code> only works on files Git is not tracking yet. If you already committed <code>.env</code>, run <code>git rm --cached .env</code> and commit. The secret is still in your history. See the next chapter.</p></aside><aside class="say"><h4>Say it like this</h4><p>Add dist and .env to the gitignore. Commit an .env.example so people know what to set.</p></aside>
+</article>
+<article class="ch" id="secrets-leak" data-part="Git on your machine" data-title="When you commit a secret">
+
+<p class="lead">If a password or key lands in a commit, assume it is stolen. Replace it. Do not just delete it.</p>
+<p>A <b>secret</b> is any private credential. Examples: API keys, database passwords, tokens and private keys. Bots scan public GitHub all day. They can find a leaked key in minutes.</p>
+<p>Why is deleting the file not enough? Git remembers. The secret stays in older commits. It also stays in forks (copies on other accounts) and clones (downloaded copies).</p>
+<p>Do these steps in order:</p>
+<figure class="fig">
+<svg viewBox="0 0 560 145" role="img" aria-label="Flowchart: leak found, rotate the key, store the new one safely, optionally clean the history">
+<defs><marker id="m6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box-accent" x="10" y="42" width="152" height="64" rx="8"/><text x="86" y="62" text-anchor="middle">1. Rotate</text><text x="86" y="78" text-anchor="middle" class="t-muted">make a new key,</text><text x="86" y="94" text-anchor="middle" class="t-muted">kill the old one</text><line class="arrow" x1="165" y1="74" x2="201" y2="74" marker-end="url(#m6)"/><rect class="box" x="204" y="42" width="152" height="64" rx="8"/><text x="280" y="62" text-anchor="middle">2. Store safely</text><text x="280" y="78" text-anchor="middle" class="t-muted">.env or host</text><text x="280" y="94" text-anchor="middle" class="t-muted">secret settings</text><line class="arrow" x1="359" y1="74" x2="395" y2="74" marker-end="url(#m6)"/><rect class="box" x="398" y="42" width="152" height="64" rx="8"/><text x="474" y="62" text-anchor="middle">3. Clean history</text><text x="474" y="78" text-anchor="middle" class="t-muted">optional</text><text x="474" y="94" text-anchor="middle" class="t-muted">git filter-repo</text>
+</svg>
+<figcaption>Step 1 is the only one that really fixes the problem.</figcaption>
+</figure>
+<ol>
+<li><b>Rotate the secret first.</b> Make a new key in the provider's dashboard. Disable the old one.</li>
+<li><b>Store the new one safely.</b> Use an <code>.env</code> file that is gitignored, or your host's secret settings.</li>
+<li><b>Optionally clean the history</b> with a tool like <code>git filter-repo</code>, then force-push (overwrite the remote branch). This is tidying, not protection.</li>
+</ol>
+<p>Prevention is better. GitHub has <b>secret scanning</b> (it spots known key formats). It also has <b>push protection</b> (it blocks a push that contains one). Both are on by default for public repos. You can switch them on for private ones.</p>
+<aside class="yours"><h4>In your project</h4><p>Anything the browser can see is public. If an API key sits in front-end code, it has leaked, whatever your repo says. Keep keys on a server or in a function.</p></aside><aside class="say"><h4>Say it like this</h4><p>We pushed a key to a public repo. Rotate it first. We can scrub history later.</p></aside>
+</article>
+<article class="ch" id="branches" data-part="Branches and remotes" data-title="Branches">
+
+<p class="lead">A branch is a safe side-road. Work there cannot break main until you choose to merge it.</p>
+<p>A branch is just a label on a commit (a saved snapshot). That is why making one is instant and free. Make one for every feature, fix or experiment.</p>
+<pre><code>git switch -c feature/login   # make a new branch and move to it
+git switch main               # go back
+git branch                    # list your branches
+git branch -d feature/login   # delete a branch you finished with</code></pre>
+<p>Older guides use <code>git checkout</code>. It does the same job but mixes in unrelated jobs. <code>switch</code> is clearer.</p>
+<p>When you switch branches, Git changes the files in your folder to match. Save your work first, or stash it (shelve it, see the stash chapter). Otherwise Git may refuse.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 170" role="img" aria-label="Diagram: a feature branch splits off main after commit B, gets two commits, and is merged back as a merge commit">
+<defs><marker id="m7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><text x="20" y="38" class="t-head">main</text><text x="20" y="128" class="t-head">feature</text><line class="arrow" x1="88" y1="50" x2="132" y2="50" marker-end="url(#m7)"/><line class="arrow" x1="178" y1="50" x2="302" y2="50" marker-end="url(#m7)"/><line class="arrow" x1="348" y1="50" x2="432" y2="50" marker-end="url(#m7)"/><line class="arrow" x1="170" y1="62" x2="220" y2="118" marker-end="url(#m7)"/><line class="arrow" x1="268" y1="125" x2="302" y2="125" marker-end="url(#m7)"/><line class="arrow" x1="348" y1="118" x2="418" y2="64" marker-end="url(#m7)"/><circle cx="70" cy="50" r="17" class="box"/><text x="70" y="54" text-anchor="middle">A</text><circle cx="155" cy="50" r="17" class="box"/><text x="155" y="54" text-anchor="middle">B</text><circle cx="325" cy="50" r="17" class="box"/><text x="325" y="54" text-anchor="middle">C</text><circle cx="450" cy="50" r="17" class="box-accent"/><text x="450" y="54" text-anchor="middle">M</text><circle cx="245" cy="125" r="17" class="box"/><text x="245" y="129" text-anchor="middle">D</text><circle cx="325" cy="125" r="17" class="box"/><text x="325" y="129" text-anchor="middle">E</text><text x="450" y="90" text-anchor="middle" class="t-muted">merge commit</text>
+</svg>
+<figcaption>The feature branch splits off at B. Main moves on (C). The merge commit M joins both lines of work.</figcaption>
+</figure><aside class="yours"><h4>In your project</h4><p>Even alone, make a branch before any risky change. A big redesign. Letting an AI tool loose. If it goes badly, delete the branch. Main stays untouched.</p></aside><aside class="say"><h4>Say it like this</h4><p>Branch off main, do it there, and open a PR when it is ready.</p></aside>
+</article>
+<article class="ch" id="remotes" data-part="Branches and remotes" data-title="Remotes: push, pull and fetch">
+
+<p class="lead">Your computer and GitHub only talk when you tell them to. Three commands do almost everything.</p>
+<ul>
+<li><b>push</b> uploads your new commits to GitHub: <code>git push</code>.</li>
+<li><b>fetch</b> downloads new commits but does not touch your files: <code>git fetch</code>. It is always safe.</li>
+<li><b>pull</b> is fetch plus a merge (combine) into your current branch: <code>git pull</code>.</li>
+</ul>
+<figure class="fig">
+<svg viewBox="0 0 560 135" role="img" aria-label="Diagram: push sends commits from laptop to GitHub; fetch and pull bring commits back">
+<defs><marker id="m8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="40" width="160" height="70" rx="8"/><text x="90" y="71" text-anchor="middle">Your laptop</text><text x="90" y="87" text-anchor="middle" class="t-muted">local repo</text><rect class="box-accent" x="390" y="40" width="160" height="70" rx="8"/><text x="470" y="71" text-anchor="middle">GitHub</text><text x="470" y="87" text-anchor="middle" class="t-muted">remote called origin</text><line class="arrow" x1="175" y1="55" x2="385" y2="55" marker-end="url(#m8)"/><line class="arrow" x1="385" y1="75" x2="175" y2="75" marker-end="url(#m8)"/><line class="arrow" x1="385" y1="95" x2="175" y2="95" marker-end="url(#m8)"/><text x="280" y="49" text-anchor="middle" class="t-accent">push: upload your commits</text><text x="280" y="70" text-anchor="middle" class="t-accent">fetch: download, change nothing</text><text x="280" y="91" text-anchor="middle" class="t-accent">pull: fetch, then merge</text>
+</svg>
+<figcaption>Push goes up. Fetch and pull come down.</figcaption>
+</figure>
+<p>The first push of a new branch must say where it goes: <code>git push -u origin feature/login</code>. After that, plain <code>git push</code> works.</p>
+<p>Git keeps a local bookmark of each remote branch. They are named like <code>origin/main</code>. They show where GitHub was the last time you looked. <code>git status</code> uses them to say "ahead by 2" or "behind by 1".</p>
+<p>Sometimes a push is <b>rejected</b>. You may see "non-fast-forward" or "fetch first". It means GitHub has commits you do not have. Pull first. Fix any conflicts (clashing edits). Push again. Do not reach for <code>--force</code>.</p>
+<p>Build a habit: <b>pull before you start. Push when you finish a chunk.</b> Unpushed commits exist only on your laptop.</p>
+<aside class="say"><h4>Say it like this</h4><p>Fetch first and see what changed upstream. Then rebase onto it before you push.</p></aside>
+</article>
+<article class="ch" id="merge-rebase" data-part="Branches and remotes" data-title="Merge versus rebase">
+
+<p class="lead">Both bring one branch's work into another. They leave different history behind.</p>
+<p><b>Merge</b> ties two branches together with a new <b>merge commit</b>. Nothing is rewritten. History shows exactly what happened, including that work ran in parallel.</p>
+<pre><code>git switch main
+git merge feature/login</code></pre>
+<p>If main has not moved since you branched, Git just slides the label forward. That is a <b>fast-forward</b>. No merge commit is needed.</p>
+<p><b>Rebase</b> replays your commits on top of the latest main. It looks as if you started from there. You get a straight line. But your commits get <em>new IDs</em>, because they now sit on a different parent.</p>
+<pre><code>git switch feature/login
+git rebase main</code></pre>
+<figure class="fig">
+<svg viewBox="0 0 560 250" role="img" aria-label="Diagram: after a merge the history has two lines joined by a merge commit; after a rebase the history is a single straight line with new copies D&#x27; and E&#x27;">
+<defs><marker id="m9" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><text x="10" y="22" class="t-head">After a merge</text><line class="arrow" x1="62" y1="55" x2="100" y2="55" marker-end="url(#m9)"/><line class="arrow" x1="144" y1="55" x2="192" y2="55" marker-end="url(#m9)"/><line class="arrow" x1="236" y1="55" x2="330" y2="55" marker-end="url(#m9)"/><line class="arrow" x1="152" y1="66" x2="188" y2="100" marker-end="url(#m9)"/><line class="arrow" x1="238" y1="108" x2="270" y2="108" marker-end="url(#m9)"/><line class="arrow" x1="314" y1="100" x2="350" y2="66" marker-end="url(#m9)"/><circle cx="45" cy="55" r="16" class="box"/><text x="45" y="59" text-anchor="middle">A</text><circle cx="125" cy="55" r="16" class="box"/><text x="125" y="59" text-anchor="middle">B</text><circle cx="215" cy="55" r="16" class="box"/><text x="215" y="59" text-anchor="middle">C</text><circle cx="365" cy="55" r="16" class="box-accent"/><text x="365" y="59" text-anchor="middle">M</text><circle cx="215" cy="108" r="16" class="box"/><text x="215" y="112" text-anchor="middle">D</text><circle cx="295" cy="108" r="16" class="box"/><text x="295" y="112" text-anchor="middle">E</text><text x="320" y="150" text-anchor="middle" class="t-muted">history shows both lines of work</text><text x="10" y="172" class="t-head">After a rebase</text><line class="arrow" x1="62" y1="205" x2="100" y2="205" marker-end="url(#m9)"/><line class="arrow" x1="144" y1="205" x2="192" y2="205" marker-end="url(#m9)"/><line class="arrow" x1="236" y1="205" x2="290" y2="205" marker-end="url(#m9)"/><line class="arrow" x1="334" y1="205" x2="388" y2="205" marker-end="url(#m9)"/><circle cx="45" cy="205" r="16" class="box"/><text x="45" y="209" text-anchor="middle">A</text><circle cx="125" cy="205" r="16" class="box"/><text x="125" y="209" text-anchor="middle">B</text><circle cx="215" cy="205" r="16" class="box"/><text x="215" y="209" text-anchor="middle">C</text><circle cx="315" cy="205" r="16" class="box-accent"/><text x="315" y="209" text-anchor="middle">D'</text><circle cx="410" cy="205" r="16" class="box-accent"/><text x="410" y="209" text-anchor="middle">E'</text><text x="320" y="240" text-anchor="middle" class="t-muted">one straight line (D' and E' are copies of D and E)</text>
+</svg>
+<figcaption>Merge keeps both lines. Rebase copies your commits (D', E') onto the end of main.</figcaption>
+</figure>
+<p><b>The golden rule:</b> never rebase commits that other people already have. It rewrites shared history. It forces everyone else to untangle their copies. Rebase your own private branch freely.</p>
+<div class="tbl"><table>
+<tr><th></th><th>Merge</th><th>Rebase</th></tr>
+<tr><td>History</td><td>Kept, with merge commits</td><td>Straight and tidy</td></tr>
+<tr><td>Rewrites commits?</td><td>No</td><td>Yes</td></tr>
+<tr><td>Safe on shared branches?</td><td>Yes</td><td>No</td></tr>
+<tr><td>Good for</td><td>Joining finished work</td><td>Updating your own branch with the latest main</td></tr>
+</table></div><aside class="yours"><h4>In your project</h4><p>Not sure? Merge. A slightly messy history is harmless. A botched rebase can cost an afternoon.</p></aside><aside class="say"><h4>Say it like this</h4><p>I will rebase my branch onto main to pick up the latest. I will not touch it once the PR is in review.</p></aside>
+</article>
+<article class="ch" id="conflicts" data-part="Branches and remotes" data-title="Merge conflicts">
+
+<p class="lead">A conflict means two people changed the same lines. Git needs a human to choose.</p>
+<p>Git merges (combines) automatically when changes touch different places. When both sides edited the same lines, it stops. It marks the file like this:</p>
+<pre><code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+const title = "Welcome back";
+=======
+const title = "Hello again";
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature/greeting</code></pre>
+<p>The part under <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code> is your side. The part above <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code> is theirs. Your job is to pick one, or mix them.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 135" role="img" aria-label="Flowchart of resolving a conflict: open the file, choose the code, delete the marker lines, test, add and commit">
+<defs><marker id="m10" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="42" width="84" height="64" rx="8"/><text x="52" y="70" text-anchor="middle">1. Open</text><text x="52" y="86" text-anchor="middle" class="t-muted">the file</text><line class="arrow" x1="97" y1="74" x2="121" y2="74" marker-end="url(#m10)"/><rect class="box" x="124" y="42" width="84" height="64" rx="8"/><text x="166" y="62" text-anchor="middle">2. Choose</text><text x="166" y="78" text-anchor="middle" class="t-muted">yours, theirs</text><text x="166" y="94" text-anchor="middle" class="t-muted">or both</text><line class="arrow" x1="211" y1="74" x2="235" y2="74" marker-end="url(#m10)"/><rect class="box" x="238" y="42" width="84" height="64" rx="8"/><text x="280" y="62" text-anchor="middle">3. Delete</text><text x="280" y="78" text-anchor="middle" class="t-muted">the marker</text><text x="280" y="94" text-anchor="middle" class="t-muted">lines</text><line class="arrow" x1="325" y1="74" x2="349" y2="74" marker-end="url(#m10)"/><rect class="box" x="352" y="42" width="84" height="64" rx="8"/><text x="394" y="70" text-anchor="middle">4. Test</text><text x="394" y="86" text-anchor="middle" class="t-muted">does it run?</text><line class="arrow" x1="439" y1="74" x2="463" y2="74" marker-end="url(#m10)"/><rect class="box-accent" x="466" y="42" width="84" height="64" rx="8"/><text x="508" y="70" text-anchor="middle">5. Add + commit</text><text x="508" y="86" text-anchor="middle" class="t-muted">git add, commit</text>
+</svg>
+<figcaption>Five small steps. The marker lines must all be deleted.</figcaption>
+</figure>
+<p>Stuck? Run <code>git merge --abort</code> (or <code>git rebase --abort</code>). Everything goes back to how it was.</p>
+<p>VS Code and GitHub's web editor show conflicts with buttons like "Accept current" and "Accept incoming". They are friendlier than editing markers by hand.</p>
+<p>You get fewer conflicts if branches are short, PRs (pull requests, proposals to merge) are small, and you bring in main often.</p>
+<aside class="say"><h4>Say it like this</h4><p>There is a conflict in the config file. Keep both settings. I will resolve it and push.</p></aside>
+</article>
+<article class="ch" id="stash" data-part="Branches and remotes" data-title="Stash, tags and other small tools">
+
+<p class="lead">Three little tools that rescue you from awkward moments.</p>
+<p><b>Stash</b> puts your unsaved changes on a shelf. You use it when you are mid-edit and must switch branches.</p>
+<pre><code>git stash          # shelve changes, working tree is clean
+git switch other-branch
+# ...do the other job, then come back...
+git stash pop      # take the changes back off the shelf</code></pre>
+<figure class="fig">
+<svg viewBox="0 0 560 140" role="img" aria-label="Flowchart: messy edits are stashed, leaving a clean folder; later stash pop brings the edits back">
+<defs><marker id="m11" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="42" width="152" height="64" rx="8"/><text x="86" y="78" text-anchor="middle">Half-done edits</text><line class="arrow" x1="165" y1="74" x2="201" y2="74" marker-end="url(#m11)"/><text x="183" y="34" text-anchor="middle" class="t-accent">git stash</text><rect class="box-accent" x="204" y="42" width="152" height="64" rx="8"/><text x="280" y="70" text-anchor="middle">On the shelf</text><text x="280" y="86" text-anchor="middle" class="t-muted">folder is clean</text><line class="arrow" x1="359" y1="74" x2="395" y2="74" marker-end="url(#m11)"/><text x="377" y="34" text-anchor="middle" class="t-accent">git stash pop</text><rect class="box" x="398" y="42" width="152" height="64" rx="8"/><text x="474" y="78" text-anchor="middle">Edits are back</text>
+</svg>
+<figcaption>A stash is a shelf for half-finished work.</figcaption>
+</figure>
+<p>A <b>tag</b> is a permanent name on one commit. Teams use it for releases, like <code>v1.2.0</code>. Unlike a branch, a tag never moves.</p>
+<pre><code>git tag v1.0.0
+git push origin v1.0.0</code></pre>
+<p><b>Cherry-pick</b> copies one commit onto another branch: <code>git cherry-pick a1b2c3d</code>. Use it when a fix landed on the wrong branch.</p>
+<aside class="say"><h4>Say it like this</h4><p>Stash that, switch to main and cut the hotfix. Pop the stash when you are back.</p></aside>
+</article>
+<article class="ch" id="branch-names" data-part="Branches and remotes" data-title="Naming branches and keeping them tidy">
+
+<p class="lead">A branch name should say what the work is. A branch should not live long.</p>
+<p>The <b>default branch</b> is where finished work ends up. New GitHub repos call it <code>main</code>. Older ones may say <code>master</code>. Treat it as always working.</p>
+<p><b>Feature branches</b> are the short-lived ones. Common names:</p>
+<ul>
+<li><code>feature/login-page</code> for new things</li>
+<li><code>fix/cart-total-rounding</code> for bugs</li>
+<li><code>chore/update-deps</code> for housekeeping</li>
+<li>Add an issue number if you have one: <code>fix/123-cart-rounding</code></li>
+</ul>
+<p>Use lowercase and hyphens. No spaces. Be consistent.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 130" role="img" aria-label="Flowchart of a branch&#x27;s life: create it, work on it, open a pull request, merge it, delete it">
+<defs><marker id="m12" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="42" width="84" height="64" rx="8"/><text x="52" y="78" text-anchor="middle">Create</text><line class="arrow" x1="97" y1="74" x2="121" y2="74" marker-end="url(#m12)"/><rect class="box" x="124" y="42" width="84" height="64" rx="8"/><text x="166" y="70" text-anchor="middle">Work</text><text x="166" y="86" text-anchor="middle" class="t-muted">small commits</text><line class="arrow" x1="211" y1="74" x2="235" y2="74" marker-end="url(#m12)"/><rect class="box" x="238" y="42" width="84" height="64" rx="8"/><text x="280" y="78" text-anchor="middle">Open PR</text><line class="arrow" x1="325" y1="74" x2="349" y2="74" marker-end="url(#m12)"/><rect class="box" x="352" y="42" width="84" height="64" rx="8"/><text x="394" y="78" text-anchor="middle">Merge</text><line class="arrow" x1="439" y1="74" x2="463" y2="74" marker-end="url(#m12)"/><rect class="box-accent" x="466" y="42" width="84" height="64" rx="8"/><text x="508" y="78" text-anchor="middle">Delete</text>
+</svg>
+<figcaption>A healthy branch lives for hours or days, not months.</figcaption>
+</figure>
+<p><b>Keep branches short.</b> The longer a branch lives, the more it drifts from main. Then conflicts (clashing edits) get worse. A day or two is great. A month is a warning sign. Split big work into several small branches.</p>
+<p><b>Delete branches after merging.</b> GitHub shows a <b>Delete branch</b> button once a PR merges. The commits are safe in main. You can restore a deleted branch from the PR page. On your laptop, <code>git fetch --prune</code> clears bookmarks for branches that no longer exist on GitHub.</p>
+<aside class="say"><h4>Say it like this</h4><p>That branch is three weeks old. Split it up or rebase it, before it becomes a conflict nightmare.</p></aside>
+</article>
+<article class="ch" id="repo-page" data-part="Working on GitHub" data-title="Anatomy of a repository page">
+
+<p class="lead">Every repo page has the same tabs. Knowing them makes any project easy to explore.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 140" role="img" aria-label="Diagram: the eight tabs on a GitHub repo page and what each is for">
+<rect class="box-accent" x="10" y="20" width="128" height="48" rx="8"/><text x="74" y="40" text-anchor="middle">Code</text><text x="74" y="56" text-anchor="middle" class="t-muted">files + README</text><rect class="box" x="148" y="20" width="128" height="48" rx="8"/><text x="212" y="40" text-anchor="middle">Issues</text><text x="212" y="56" text-anchor="middle" class="t-muted">bugs and ideas</text><rect class="box" x="286" y="20" width="128" height="48" rx="8"/><text x="350" y="40" text-anchor="middle">Pull requests</text><text x="350" y="56" text-anchor="middle" class="t-muted">proposed changes</text><rect class="box" x="424" y="20" width="128" height="48" rx="8"/><text x="488" y="40" text-anchor="middle">Actions</text><text x="488" y="56" text-anchor="middle" class="t-muted">automation</text><rect class="box" x="10" y="80" width="128" height="48" rx="8"/><text x="74" y="100" text-anchor="middle">Projects</text><text x="74" y="116" text-anchor="middle" class="t-muted">planning boards</text><rect class="box" x="148" y="80" width="128" height="48" rx="8"/><text x="212" y="100" text-anchor="middle">Security</text><text x="212" y="116" text-anchor="middle" class="t-muted">alerts</text><rect class="box" x="286" y="80" width="128" height="48" rx="8"/><text x="350" y="100" text-anchor="middle">Insights</text><text x="350" y="116" text-anchor="middle" class="t-muted">activity stats</text><rect class="box" x="424" y="80" width="128" height="48" rx="8"/><text x="488" y="100" text-anchor="middle">Settings</text><text x="488" y="116" text-anchor="middle" class="t-muted">admins only</text>
+</svg>
+<figcaption>The tabs along the top of every repo.</figcaption>
+</figure>
+<p>A repo is either <b>public</b> (anyone can see it) or <b>private</b> (only people you invite). Public does not mean anyone can change it. Only collaborators (people you gave access) can push. Everyone else must ask through a fork (their own copy) and a pull request (a proposal to merge).</p>
+<p>On the right you will see <b>About</b> (description and links), <b>Releases</b> and <b>Languages</b>. A <b>star</b> is a bookmark and a thumbs-up. <b>Watch</b> means you get notifications.</p>
+<p>Handy keys on a repo page. Press <code>t</code> to search for a file. Press <code>.</code> to open the repo in an editor in your browser. Press <code>?</code> to see all shortcuts.</p>
+<aside class="say"><h4>Say it like this</h4><p>It is in the Actions tab. The last run failed on the lint step.</p></aside>
+</article>
+<article class="ch" id="readme" data-part="Working on GitHub" data-title="README, licence and community files">
+
+<p class="lead">The README is your project's front door. The licence says what others may do with your code.</p>
+<p>A file called <code>README.md</code> in the repo root shows on the repo page. It is written in <b>Markdown</b>. Markdown is plain text with simple marks for headings (<code>#</code>), lists (<code>-</code>) and links. A good README answers four questions:</p>
+<ol>
+<li><b>What is this?</b> One or two sentences. Add a screenshot if it is visual.</li>
+<li><b>How do I run it?</b> Give the exact commands from a fresh clone (a fresh download).</li>
+<li><b>How do I set it up?</b> List the settings it needs. Never show the real secret values.</li>
+<li><b>How do I help?</b> Link to a contributing guide, if there is one.</li>
+</ol>
+<p>Test your README on a clean machine. "It works on my machine" is the most common README bug.</p>
+<p>A <b>licence</b> is a file called <code>LICENSE</code>. It says how others may use your code. With no licence, nobody else may legally reuse it. Even if it is public. Common choices:</p>
+<div class="tbl"><table>
+<tr><th>Licence</th><th>In one line</th></tr>
+<tr><td><b>MIT</b></td><td>Do almost anything. Keep the notice.</td></tr>
+<tr><td><b>Apache 2.0</b></td><td>Like MIT, plus a promise about patents.</td></tr>
+<tr><td><b>GPL</b></td><td>Anything built on it must also be open source.</td></tr>
+</table></div>
+<p>GitHub can add a licence when you create the repo. The site <code>choosealicense.com</code> helps you pick.</p>
+<p>Other files GitHub knows: <code>CONTRIBUTING.md</code> (how to send changes), <code>CODE_OF_CONDUCT.md</code> (how to behave) and <code>SECURITY.md</code> (how to report a vulnerability in private).</p>
+<aside class="yours"><h4>In your project</h4><p>Write the README for yourself in six months. You will forget how to run your own project. Five lines will save you an hour.</p></aside><aside class="say"><h4>Say it like this</h4><p>The README does not say which Node version it needs. Can you add that to the setup section?</p></aside>
+</article>
+<article class="ch" id="issues" data-part="Working on GitHub" data-title="Issues">
+
+<p class="lead">An issue is a written note about something to do. It might be a bug, a feature or a question.</p>
+<p>Issues keep work out of people's heads and chat threads. Each has a number (<code>#42</code>), a title, a description and a comment thread. Its status is <b>open</b> or <b>closed</b>. You can assign it to someone. You can add <b>labels</b> (coloured tags like <code>bug</code>). You can add it to a <b>milestone</b> (a goal like "v1.0").</p>
+<p>A good bug report has three parts:</p>
+<ul>
+<li><b>What you expected</b> and <b>what happened</b>.</li>
+<li><b>Steps to reproduce.</b> Numbered, so anyone can see the bug themselves.</li>
+<li><b>Context.</b> Browser, version, error message, screenshot.</li>
+</ul>
+<p>A good feature request explains the <em>problem</em> first. Then it suggests a fix. Owners can agree with a clear problem even if they choose a different fix.</p>
+<p>Two tricks make issues powerful. A <b>mention</b>: typing <code>#42</code> links to that issue, and <code>@name</code> notifies a person. A <b>closing keyword</b>: write <code>Fixes #42</code> in a pull request (PR, a proposal to merge). When the PR is merged, the issue closes by itself.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 140" role="img" aria-label="Flowchart: an issue is opened, someone picks it up, a pull request says Fixes #42, and the issue closes when the PR merges">
+<defs><marker id="m13" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="42" width="104" height="64" rx="8"/><text x="62" y="70" text-anchor="middle">Issue opened</text><text x="62" y="86" text-anchor="middle" class="t-muted">#42</text><line class="arrow" x1="116" y1="74" x2="152" y2="74" marker-end="url(#m13)"/><rect class="box" x="156" y="42" width="104" height="64" rx="8"/><text x="208" y="70" text-anchor="middle">Someone takes it</text><text x="208" y="86" text-anchor="middle" class="t-muted">assigned</text><line class="arrow" x1="262" y1="74" x2="298" y2="74" marker-end="url(#m13)"/><rect class="box" x="301" y="42" width="104" height="64" rx="8"/><text x="353" y="70" text-anchor="middle">PR opened</text><text x="353" y="86" text-anchor="middle" class="t-muted">says Fixes #42</text><line class="arrow" x1="408" y1="74" x2="444" y2="74" marker-end="url(#m13)"/><rect class="box-accent" x="446" y="42" width="104" height="64" rx="8"/><text x="498" y="70" text-anchor="middle">PR merged</text><text x="498" y="86" text-anchor="middle" class="t-muted">issue closes</text>
+</svg>
+<figcaption>The issue and the code change are linked from start to finish.</figcaption>
+</figure>
+<p>Repos can add <b>issue templates</b>. These give reporters a form, so you get the details you need.</p>
+<aside class="yours"><h4>In your project</h4><p>Even alone, issues make a handy to-do list. Write one when you have an idea mid-flow, so you do not lose it.</p></aside><aside class="say"><h4>Say it like this</h4><p>Can you open an issue with repro steps? I will link the PR so it closes by itself.</p></aside>
+</article>
+<article class="ch" id="prs" data-part="Working on GitHub" data-title="Pull requests">
+
+<p class="lead">A pull request (PR) is a conversation about a branch. It says: "here is my change, please look before it joins main".</p>
+<p>The name is backwards. You are asking the owners to <em>pull</em> your changes in. A PR page shows the difference between your branch and the target branch (the <b>base</b>). It shows the commits (saved snapshots). It has a place to talk. It shows the results of automatic checks.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 140" role="img" aria-label="Diagram: push your branch, open a pull request, checks and review happen, then merge into main">
+<defs><marker id="m14" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="42" width="104" height="64" rx="8"/><text x="62" y="70" text-anchor="middle">Push branch</text><text x="62" y="86" text-anchor="middle" class="t-muted">upload it</text><line class="arrow" x1="116" y1="74" x2="152" y2="74" marker-end="url(#m14)"/><rect class="box-accent" x="156" y="42" width="104" height="64" rx="8"/><text x="208" y="70" text-anchor="middle">Open PR</text><text x="208" y="86" text-anchor="middle" class="t-muted">describe it</text><line class="arrow" x1="262" y1="74" x2="298" y2="74" marker-end="url(#m14)"/><rect class="box" x="301" y="42" width="104" height="64" rx="8"/><text x="353" y="70" text-anchor="middle">Checks + review</text><text x="353" y="86" text-anchor="middle" class="t-muted">fix and repeat</text><line class="arrow" x1="408" y1="74" x2="444" y2="74" marker-end="url(#m14)"/><rect class="box" x="446" y="42" width="104" height="64" rx="8"/><text x="498" y="70" text-anchor="middle">Merge</text><text x="498" y="86" text-anchor="middle" class="t-muted">into main</text>
+</svg>
+<figcaption>The PR is the meeting point for your code, the checks and the reviewers.</figcaption>
+</figure>
+<p>To open one, push your branch. Then click the yellow "Compare and pull request" banner. Or run <code>gh pr create</code>. Fill in two things:</p>
+<ul>
+<li><b>A title</b> that says what the change does.</li>
+<li><b>A description.</b> Say why it is needed and what changed. Say how you tested it. Add screenshots for visual work. Add <code>Fixes #42</code> to link the issue.</li>
+</ul>
+<p>You can open a <b>draft PR</b> early. It shows work in progress. It cannot be merged until you click <b>Ready for review</b>. New commits you push to the branch appear in the same PR.</p>
+<p>Keep PRs <b>small and focused</b>. A 100-line PR gets a careful review. A 2,000-line one gets a nervous "looks fine".</p>
+<aside class="yours"><h4>In your project</h4><p>Working alone? Open PRs against your own main anyway. You get a clean diff (list of changes) to read first. Your checks run. Each PR becomes a labelled chapter of your project's story.</p></aside><aside class="say"><h4>Say it like this</h4><p>Open a draft PR early, so we can sanity-check the approach before you build the whole thing.</p></aside>
+</article>
+<article class="ch" id="reviews" data-part="Working on GitHub" data-title="Code review">
+
+<p class="lead">A review is a second pair of eyes on a change. Good reviews are about the code, not the person.</p>
+<p>Open the PR's <b>Files changed</b> tab. Click the <code>+</code> next to a line to comment. When you are done, send the review with one of three verdicts:</p>
+<ul>
+<li><b>Comment.</b> Feedback, no decision.</li>
+<li><b>Approve.</b> Good to merge.</li>
+<li><b>Request changes.</b> Fix something first.</li>
+</ul>
+<figure class="fig">
+<svg viewBox="0 0 560 180" role="img" aria-label="Flowchart: author opens PR, reviewer reviews; if changes are requested the author fixes and pushes and review repeats; if approved the PR is merged">
+<defs><marker id="m15" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="45" width="120" height="50" rx="8"/><text x="70" y="74" text-anchor="middle">Author opens PR</text><rect class="box-accent" x="190" y="45" width="120" height="50" rx="8"/><text x="250" y="66" text-anchor="middle">Reviewer reads</text><text x="250" y="82" text-anchor="middle" class="t-muted">and comments</text><rect class="box" x="400" y="15" width="150" height="44" rx="8"/><text x="475" y="33" text-anchor="middle">Approve</text><text x="475" y="49" text-anchor="middle" class="t-muted">ready to merge</text><rect class="box" x="400" y="85" width="150" height="44" rx="8"/><text x="475" y="103" text-anchor="middle">Request changes</text><text x="475" y="119" text-anchor="middle" class="t-muted">author fixes</text><line class="arrow" x1="133" y1="70" x2="187" y2="70" marker-end="url(#m15)"/><line class="arrow" x1="313" y1="62" x2="397" y2="42" marker-end="url(#m15)"/><line class="arrow" x1="313" y1="80" x2="397" y2="104" marker-end="url(#m15)"/><path class="arrow" d="M475 132 C475 150 250 150 250 100" marker-end="url(#m15)"/><text x="360" y="168" text-anchor="middle" class="t-muted">push fixes, review again</text>
+</svg>
+<figcaption>Review is a loop. It ends when the reviewer approves.</figcaption>
+</figure>
+<p>Reviewers can also write <b>suggestions</b>. These are small edits the author accepts with one click. A conversation can be marked <b>resolved</b> when it is dealt with.</p>
+<p><b>As a reviewer</b>, ask: Does it do what the PR says? Is anything missing, like tests? Could it break something else? Could it leak a secret? Be specific and explain why. Mark small stuff as a nit ("nit: rename this if you like").</p>
+<p><b>As the author</b>, reply to every comment. Push fixes. Do not take it personally. Review is how a team keeps quality up and shares knowledge.</p>
+<p><b>Review AI-written code as hard as anyone's.</b> It can sound sure and be wrong.</p>
+<aside class="say"><h4>Say it like this</h4><p>Approved with one nit. I left a suggestion on the error handling that you can accept in one click.</p></aside>
+</article>
+<article class="ch" id="merge-methods" data-part="Working on GitHub" data-title="Merge methods: merge, squash and rebase">
+
+<p class="lead">GitHub's green button offers three ways to land a PR. Each leaves different history.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 185" role="img" aria-label="Diagram: what lands on main for each merge method. Merge commit keeps all commits plus a merge commit; squash makes one commit; rebase copies each commit in a straight line">
+<defs><marker id="m16" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><text x="10" y="44" class="t-head">Merge commit</text><text x="10" y="99" class="t-head">Squash and merge</text><text x="10" y="154" class="t-head">Rebase and merge</text><line class="arrow" x1="238" y1="40" x2="272" y2="40" marker-end="url(#m16)"/><line class="arrow" x1="308" y1="40" x2="342" y2="40" marker-end="url(#m16)"/><line class="arrow" x1="378" y1="40" x2="430" y2="40" marker-end="url(#m16)"/><circle cx="220" cy="40" r="16" class="box"/><text x="220" y="44" text-anchor="middle">C</text><circle cx="290" cy="40" r="16" class="box"/><text x="290" y="44" text-anchor="middle">D</text><circle cx="360" cy="40" r="16" class="box"/><text x="360" y="44" text-anchor="middle">E</text><circle cx="450" cy="40" r="16" class="box-accent"/><text x="450" y="44" text-anchor="middle">M</text><text x="450" y="70" text-anchor="middle" class="t-muted">all commits + a merge commit</text><line class="arrow" x1="238" y1="95" x2="392" y2="95" marker-end="url(#m16)"/><circle cx="220" cy="95" r="16" class="box"/><text x="220" y="99" text-anchor="middle">C</text><circle cx="410" cy="95" r="16" class="box-accent"/><text x="410" y="99" text-anchor="middle">S</text><text x="440" y="99" class="t-muted">one commit (D and E squashed)</text><line class="arrow" x1="238" y1="150" x2="272" y2="150" marker-end="url(#m16)"/><line class="arrow" x1="308" y1="150" x2="342" y2="150" marker-end="url(#m16)"/><circle cx="220" cy="150" r="16" class="box"/><text x="220" y="154" text-anchor="middle">C</text><circle cx="290" cy="150" r="16" class="box-accent"/><text x="290" y="154" text-anchor="middle">D'</text><circle cx="360" cy="150" r="16" class="box-accent"/><text x="360" y="154" text-anchor="middle">E'</text><text x="400" y="154" class="t-muted">copies, straight line</text>
+</svg>
+<figcaption>What each green-button option leaves on main.</figcaption>
+</figure><div class="tbl"><table>
+<tr><th>Method</th><th>What lands on main</th><th>Use it when</th></tr>
+<tr><td><b>Create a merge commit</b></td><td>All the branch's commits, plus a merge commit.</td><td>You want a full record of how the work happened.</td></tr>
+<tr><td><b>Squash and merge</b></td><td>One single commit with the whole PR inside.</td><td>The branch has messy "wip" commits. Main then reads as one commit per change. A popular default.</td></tr>
+<tr><td><b>Rebase and merge</b></td><td>Each commit copied onto main. No merge commit.</td><td>The commits are already clean and you want a straight line.</td></tr>
+</table></div>
+<p>Repo admins can turn off methods they do not want. So you might see fewer options.</p>
+<p>After a squash, your branch's original commits are <b>not</b> in main. So delete the branch. Start a fresh one from the updated main.</p>
+<p>Before you merge, check three things. Checks are green (automatic tests passed). The review is approved. The PR title reads well. With squash, the PR title becomes the commit message.</p>
+<aside class="say"><h4>Say it like this</h4><p>Squash it. We do not need fourteen 'fix typo' commits in main.</p></aside>
+</article>
+<article class="ch" id="forks" data-part="Working on GitHub" data-title="Forks and contributing to other people&#x27;s projects">
+
+<p class="lead">A fork is your own copy of someone else's repo on GitHub. It lets you suggest changes without needing permission to push.</p>
+<p>On a public project you cannot push. So you do this:</p>
+<ol>
+<li><b>Fork</b> it. Click the Fork button. You now have <code>you/project</code> on GitHub.</li>
+<li><b>Clone</b> (download) your fork to your computer.</li>
+<li>Make a branch. Commit. Push to <em>your</em> fork.</li>
+<li>Open a <b>pull request</b> (a proposal to merge) from your fork to the original.</li>
+</ol>
+<figure class="fig">
+<svg viewBox="0 0 560 150" role="img" aria-label="Diagram: the original repo is forked to your fork, which you clone to your laptop; you push back to your fork and open a pull request to the original">
+<defs><marker id="m17" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="45" width="130" height="60" rx="8"/><text x="75" y="71" text-anchor="middle">Original repo</text><text x="75" y="87" text-anchor="middle" class="t-muted">called upstream</text><rect class="box-accent" x="215" y="45" width="130" height="60" rx="8"/><text x="280" y="71" text-anchor="middle">Your fork</text><text x="280" y="87" text-anchor="middle" class="t-muted">your copy on GitHub</text><rect class="box" x="420" y="45" width="130" height="60" rx="8"/><text x="485" y="71" text-anchor="middle">Your laptop</text><text x="485" y="87" text-anchor="middle" class="t-muted">local clone</text><line class="arrow" x1="143" y1="62" x2="210" y2="62" marker-end="url(#m17)"/><line class="arrow" x1="210" y1="90" x2="143" y2="90" marker-end="url(#m17)"/><line class="arrow" x1="348" y1="62" x2="415" y2="62" marker-end="url(#m17)"/><line class="arrow" x1="415" y1="90" x2="348" y2="90" marker-end="url(#m17)"/><text x="177" y="52" text-anchor="middle" class="t-accent">fork</text><text x="177" y="109" text-anchor="middle" class="t-accent">PR</text><text x="382" y="52" text-anchor="middle" class="t-accent">clone</text><text x="382" y="109" text-anchor="middle" class="t-accent">push</text>
+</svg>
+<figcaption>You never push to the original. You push to your fork and ask the owners to pull from it.</figcaption>
+</figure>
+<p>Your fork does not update by itself. Click <b>Sync fork</b> on your fork's page. Or add the original as a second remote (a second linked copy), named <code>upstream</code>:</p>
+<pre><code>git remote add upstream https://github.com/original/project.git
+git fetch upstream
+git merge upstream/main</code></pre>
+<p>Good manners when contributing:</p>
+<ul>
+<li>Read <code>CONTRIBUTING.md</code> first.</li>
+<li>Check existing issues.</li>
+<li><b>Open an issue before big work.</b> Do not spend a weekend on something they will decline.</li>
+<li>Keep PRs small. Be patient. Owners are often volunteers.</li>
+</ul>
+<aside class="say"><h4>Say it like this</h4><p>I forked it, fixed the typo on a branch and sent a PR. I will sync my fork before the next one.</p></aside>
+</article>
+<article class="ch" id="team-flow" data-part="Working in a team" data-title="Team workflows: GitHub flow and friends">
+
+<p class="lead">A workflow is an agreement on how changes get from someone's laptop into main.</p>
+<p><b>GitHub flow</b> is the simplest. It is also the most common. It is the one this guide has taught so far:</p>
+<figure class="fig">
+<svg viewBox="0 0 560 135" role="img" aria-label="Flowchart of GitHub flow: branch off main, commit and push, open a pull request, review and checks, merge and deploy">
+<defs><marker id="m18" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="42" width="84" height="64" rx="8"/><text x="52" y="70" text-anchor="middle">1. Branch</text><text x="52" y="86" text-anchor="middle" class="t-muted">off main</text><line class="arrow" x1="97" y1="74" x2="121" y2="74" marker-end="url(#m18)"/><rect class="box" x="124" y="42" width="84" height="64" rx="8"/><text x="166" y="70" text-anchor="middle">2. Commit</text><text x="166" y="86" text-anchor="middle" class="t-muted">and push</text><line class="arrow" x1="211" y1="74" x2="235" y2="74" marker-end="url(#m18)"/><rect class="box" x="238" y="42" width="84" height="64" rx="8"/><text x="280" y="70" text-anchor="middle">3. Open a PR</text><text x="280" y="86" text-anchor="middle" class="t-muted">pull request</text><line class="arrow" x1="325" y1="74" x2="349" y2="74" marker-end="url(#m18)"/><rect class="box" x="352" y="42" width="84" height="64" rx="8"/><text x="394" y="70" text-anchor="middle">4. Review</text><text x="394" y="86" text-anchor="middle" class="t-muted">and checks</text><line class="arrow" x1="439" y1="74" x2="463" y2="74" marker-end="url(#m18)"/><rect class="box-accent" x="466" y="42" width="84" height="64" rx="8"/><text x="508" y="70" text-anchor="middle">5. Merge</text><text x="508" y="86" text-anchor="middle" class="t-muted">and deploy</text>
+</svg>
+<figcaption>GitHub flow. Main is always working.</figcaption>
+</figure>
+<ul>
+<li><code>main</code> is always ready to ship.</li>
+<li>Every change gets its own branch.</li>
+<li>Every change goes through a PR (pull request, a proposal to merge).</li>
+<li>Merge only when checks are green and a person approved.</li>
+</ul>
+<p><b>Trunk-based development</b> goes further. Branches live for hours, not days. Unfinished features hide behind a <b>feature flag</b>. A feature flag is a switch in the code that turns a feature on or off. It needs no new deploy. This suits teams with strong automatic tests.</p>
+<p><b>Gitflow</b> is older and heavier. It has long-lived <code>develop</code>, <code>release</code> and <code>hotfix</code> branches. Some teams that ship numbered versions still use it. Most web teams have moved to something simpler.</p>
+<p>Whichever you choose, the ideas stay the same. Protect main. Keep changes small. Review before merging. Let automation do the boring checking.</p>
+<aside class="yours"><h4>In your project</h4><p>Start with GitHub flow. It works for one person or a whole company. You can add rules later.</p></aside><aside class="say"><h4>Say it like this</h4><p>We do GitHub flow here. Short branches off main, PR, review, squash, deploy.</p></aside>
+</article>
+<article class="ch" id="protection" data-part="Working in a team" data-title="Protecting main: branch protection and rulesets">
+
+<p class="lead">Rules that stop anyone, even you on a tired Friday, from pushing straight to main or merging broken code.</p>
+<p><b>Branch protection rules</b> and the newer <b>rulesets</b> live in Settings. They set conditions a change must meet before it can land. Think of them as gates.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 140" role="img" aria-label="Diagram: a pull request must pass the checks gate and the approval gate before it can reach main">
+<defs><marker id="m19" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="42" width="104" height="64" rx="8"/><text x="62" y="78" text-anchor="middle">Pull request</text><line class="arrow" x1="116" y1="74" x2="152" y2="74" marker-end="url(#m19)"/><rect class="box" x="156" y="42" width="104" height="64" rx="8"/><text x="208" y="70" text-anchor="middle">Gate 1</text><text x="208" y="86" text-anchor="middle" class="t-muted">checks green?</text><line class="arrow" x1="262" y1="74" x2="298" y2="74" marker-end="url(#m19)"/><rect class="box" x="301" y="42" width="104" height="64" rx="8"/><text x="353" y="70" text-anchor="middle">Gate 2</text><text x="353" y="86" text-anchor="middle" class="t-muted">someone approved?</text><line class="arrow" x1="408" y1="74" x2="444" y2="74" marker-end="url(#m19)"/><rect class="box-accent" x="446" y="42" width="104" height="64" rx="8"/><text x="498" y="78" text-anchor="middle">main</text>
+</svg>
+<figcaption>Each rule is a gate. Nothing reaches main unless it passes them all.</figcaption>
+</figure>
+<p>A typical set of rules:</p>
+<ul>
+<li><b>Require a pull request.</b> Nobody pushes directly to main.</li>
+<li><b>Require approvals.</b> For example, one reviewer must say yes.</li>
+<li><b>Require status checks.</b> A status check is a pass or fail result from an automatic job, like tests. Required checks must pass.</li>
+<li><b>Require conversations to be resolved.</b></li>
+<li><b>Block force pushes and deletion.</b> A force push overwrites the branch.</li>
+</ul>
+<p>Rules apply to everyone. You can allow named people to <b>bypass</b> them. Keep that list tiny.</p>
+<p>Some options depend on your plan. Rules work on public repos for free. Private repos may need a paid plan. If the options are missing in Settings, check your plan.</p>
+<aside class="yours"><h4>In your project</h4><p>Even solo, turn on "require a PR and passing checks" for main. It is a cheap seatbelt. It matters more once AI tools or automation can push code.</p></aside><aside class="say"><h4>Say it like this</h4><p>Main is protected. You need a PR, one approval and green checks. No direct pushes.</p></aside>
+</article>
+<article class="ch" id="codeowners" data-part="Working in a team" data-title="CODEOWNERS and templates">
+
+<p class="lead">Small files in your repo that send reviews to the right people and make every PR and issue consistent.</p>
+<p><b>CODEOWNERS</b> is a file at <code>.github/CODEOWNERS</code>. It maps parts of the repo to people or teams. When a PR (pull request) changes those files, GitHub asks the owner for a review. Branch rules can also require their approval.</p>
+<pre><code># everything defaults to the core team
+*            @acme/core-team
+# payments code needs a payments reviewer
+/payments/   @acme/payments
+# docs can be reviewed by the docs team
+*.md         @acme/docs</code></pre>
+<figure class="fig">
+<svg viewBox="0 0 560 140" role="img" aria-label="Diagram: a PR changes a file in /payments, the CODEOWNERS file maps that folder to the payments team, and GitHub asks that team to review">
+<defs><marker id="m20" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="42" width="152" height="64" rx="8"/><text x="86" y="70" text-anchor="middle">PR changes</text><text x="86" y="86" text-anchor="middle" class="t-muted">/payments/pay.js</text><line class="arrow" x1="165" y1="74" x2="201" y2="74" marker-end="url(#m20)"/><rect class="box" x="204" y="42" width="152" height="64" rx="8"/><text x="280" y="70" text-anchor="middle">CODEOWNERS</text><text x="280" y="86" text-anchor="middle" class="t-muted">file lookup</text><line class="arrow" x1="359" y1="74" x2="395" y2="74" marker-end="url(#m20)"/><rect class="box-accent" x="398" y="42" width="152" height="64" rx="8"/><text x="474" y="70" text-anchor="middle">Payments team</text><text x="474" y="86" text-anchor="middle" class="t-muted">asked to review</text>
+</svg>
+<figcaption>CODEOWNERS answers "who should look at this?" automatically.</figcaption>
+</figure>
+<p>A <b>pull request template</b> pre-fills the description box. It lives at <code>.github/pull_request_template.md</code>. You might add headings like "What changed", "How to test" and "Screenshots". <b>Issue templates</b> do the same for bug reports.</p>
+<p>Together they cut down on "who should look at this?" and "what does this even change?".</p>
+<aside class="say"><h4>Say it like this</h4><p>Anything under /infra needs a CODEOWNERS approval, so it auto-asks the platform team.</p></aside>
+</article>
+<article class="ch" id="projects" data-part="Working in a team" data-title="Labels, milestones and Projects">
+
+<p class="lead">Three ways to organise work on GitHub, from light to full planning board.</p>
+<ul>
+<li><b>Labels</b> are coloured tags on issues and PRs. Examples: <code>bug</code>, <code>docs</code>, <code>blocked</code>. Keep the set small.</li>
+<li><b>Milestones</b> group issues and PRs towards a goal or date, like "v1.0 launch". They show a progress bar.</li>
+<li><b>GitHub Projects</b> are boards and tables. They can span many repos. Cards are issues and PRs. Columns are stages like Todo, In progress and Done.</li>
+</ul>
+<figure class="fig">
+<svg viewBox="0 0 560 155" role="img" aria-label="Diagram: a project board with three columns, Todo, In progress and Done, each holding cards">
+<rect class="box" x="10" y="10" width="175" height="135" rx="8"/><text x="97" y="32" text-anchor="middle" class="t-head">Todo</text><rect class="box" x="22" y="45" width="151" height="36" rx="8"/><text x="97" y="67" text-anchor="middle">Fix login bug</text><rect class="box" x="22" y="91" width="151" height="36" rx="8"/><text x="97" y="113" text-anchor="middle">Add dark mode</text><rect class="box" x="195" y="10" width="175" height="135" rx="8"/><text x="282" y="32" text-anchor="middle" class="t-head">In progress</text><rect class="box" x="207" y="45" width="151" height="36" rx="8"/><text x="282" y="67" text-anchor="middle">Update README</text><rect class="box-accent" x="380" y="10" width="175" height="135" rx="8"/><text x="467" y="32" text-anchor="middle" class="t-head">Done</text><rect class="box" x="392" y="45" width="151" height="36" rx="8"/><text x="467" y="67" text-anchor="middle">Set up CI</text><rect class="box" x="392" y="91" width="151" height="36" rx="8"/><text x="467" y="113" text-anchor="middle">Choose a licence</text>
+</svg>
+<figcaption>A Project board. Cards are issues and PRs. They move right as work progresses.</figcaption>
+</figure>
+<p>The usual loop: an idea becomes an <b>issue</b> (a tracked task). It goes on the board. Someone opens a <b>PR</b> that says <code>Fixes #n</code>. When it merges, the card moves to Done by itself.</p>
+<p>Do not over-engineer this. A small team can live on issues and labels. Add Projects when you need an overview.</p>
+<aside class="say"><h4>Say it like this</h4><p>Label it 'blocked' and put it in the next milestone. We cannot ship without it.</p></aside>
+</article>
+<article class="ch" id="orgs" data-part="Working in a team" data-title="Organisations, teams and permissions">
+
+<p class="lead">An organisation is a shared account for a group. The repos belong to the team, not to one person.</p>
+<p>A personal repo lives at <code>github.com/you/project</code>. An organisation's lives at <code>github.com/acme/project</code>. If a personal repo's owner leaves, the project leaves too. That is why teams use organisations.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 175" role="img" aria-label="Diagram: an organisation contains teams, and teams are given access to repositories">
+<defs><marker id="m21" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box-accent" x="215" y="8" width="130" height="40" rx="8"/><text x="280" y="24" text-anchor="middle">Organisation</text><text x="280" y="40" text-anchor="middle" class="t-muted">acme</text><rect class="box" x="80" y="70" width="130" height="40" rx="8"/><text x="145" y="86" text-anchor="middle">Team</text><text x="145" y="102" text-anchor="middle" class="t-muted">@acme/backend</text><rect class="box" x="350" y="70" width="130" height="40" rx="8"/><text x="415" y="86" text-anchor="middle">Team</text><text x="415" y="102" text-anchor="middle" class="t-muted">@acme/frontend</text><rect class="box" x="10" y="130" width="120" height="32" rx="8"/><text x="70" y="150" text-anchor="middle">api repo</text><rect class="box" x="150" y="130" width="120" height="32" rx="8"/><text x="210" y="150" text-anchor="middle">worker repo</text><rect class="box" x="300" y="130" width="120" height="32" rx="8"/><text x="360" y="150" text-anchor="middle">web repo</text><rect class="box" x="440" y="130" width="110" height="32" rx="8"/><text x="495" y="150" text-anchor="middle">docs repo</text><line class="arrow" x1="250" y1="50" x2="160" y2="68" marker-end="url(#m21)"/><line class="arrow" x1="310" y1="50" x2="400" y2="68" marker-end="url(#m21)"/><line class="arrow" x1="130" y1="112" x2="80" y2="128" marker-end="url(#m21)"/><line class="arrow" x1="160" y1="112" x2="190" y2="128" marker-end="url(#m21)"/><line class="arrow" x1="400" y1="112" x2="360" y2="128" marker-end="url(#m21)"/><line class="arrow" x1="430" y1="112" x2="480" y2="128" marker-end="url(#m21)"/>
+</svg>
+<figcaption>An organisation owns the repos. Teams get access to them.</figcaption>
+</figure>
+<p>Inside an organisation you make <b>teams</b>, like <code>@acme/backend</code>. You give teams access to repos. Roles on a repo, from least to most power:</p>
+<div class="tbl"><table>
+<tr><th>Role</th><th>Can do</th></tr>
+<tr><td>Read</td><td>View and clone. Comment on issues and PRs.</td></tr>
+<tr><td>Triage</td><td>Read, plus manage issues and PRs (labels, assignees). No code changes.</td></tr>
+<tr><td>Write</td><td>Push branches. Review and merge PRs.</td></tr>
+<tr><td>Maintain</td><td>Write, plus manage the repo, without the sensitive settings.</td></tr>
+<tr><td>Admin</td><td>Everything. Settings, secrets, deleting the repo.</td></tr>
+</table></div>
+<p>Follow the rule of <b>least privilege</b>. Give people the lowest role that lets them do the job. Most people need Write at most.</p>
+<p>For outside helpers, add them as an <b>outside collaborator</b> on one repo. Do not add them to the whole organisation.</p>
+<aside class="say"><h4>Say it like this</h4><p>Give the contractor Write on that one repo as an outside collaborator. Not org membership.</p></aside>
+</article>
+<article class="ch" id="etiquette" data-part="Working in a team" data-title="Working well with others">
+
+<p class="lead">Most team friction comes from habits, not tools. A few habits fix most of it.</p>
+<ul>
+<li><b>Small PRs.</b> Aim for something a reviewer can read in 15 minutes. If it is bigger, split it.</li>
+<li><b>Describe your change.</b> Say what and why. Say how to test it. Link the issue.</li>
+<li><b>Review your own diff first.</b> Read it on the Files changed tab before asking anyone else. You will spot leftovers.</li>
+<li><b>Review promptly.</b> A PR left waiting for days blocks the author and invites conflicts (clashing edits).</li>
+<li><b>Be kind and specific.</b> Comment on the code, not the person. Ask questions: "What happens if this is empty?"</li>
+<li><b>Warn before you force-push.</b> Do not do it to a branch someone is reviewing without saying so. It breaks their view of what changed.</li>
+<li><b>Pull often.</b> Build on the latest main.</li>
+<li><b>Write decisions down.</b> If it was decided in chat, put the result on the PR or issue.</li>
+<li><b>Tune notifications.</b> In Settings, Notifications. "Participating and @mentions" is a good default.</li>
+</ul>
+<aside class="say"><h4>Say it like this</h4><p>This one is big. Can we split the refactor from the feature, so review is quicker?</p></aside>
+</article>
+<article class="ch" id="actions" data-part="Automation and shipping" data-title="GitHub Actions: automation in your repo">
+
+<p class="lead">Actions run a script on GitHub's computers whenever something happens in your repo. For example, a push or a new PR.</p>
+<p>The script lives in a <b>workflow</b>. A workflow is a text file in <code>.github/workflows/</code>. It is written in <b>YAML</b>. YAML is a simple config format that uses indentation. A workflow has these parts:</p>
+<figure class="fig">
+<svg viewBox="0 0 560 140" role="img" aria-label="Flowchart: an event such as a push triggers a workflow, which runs a job on a runner, and the result shows as a tick or a cross on the PR">
+<defs><marker id="m22" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="42" width="104" height="64" rx="8"/><text x="62" y="70" text-anchor="middle">Event</text><text x="62" y="86" text-anchor="middle" class="t-muted">push or new PR</text><line class="arrow" x1="116" y1="74" x2="152" y2="74" marker-end="url(#m22)"/><text x="134" y="34" text-anchor="middle" class="t-accent">triggers</text><rect class="box" x="156" y="42" width="104" height="64" rx="8"/><text x="208" y="70" text-anchor="middle">Workflow</text><text x="208" y="86" text-anchor="middle" class="t-muted">the YAML file</text><line class="arrow" x1="262" y1="74" x2="298" y2="74" marker-end="url(#m22)"/><text x="280" y="34" text-anchor="middle" class="t-accent">runs</text><rect class="box" x="301" y="42" width="104" height="64" rx="8"/><text x="353" y="70" text-anchor="middle">Job on a runner</text><text x="353" y="86" text-anchor="middle" class="t-muted">a temporary computer</text><line class="arrow" x1="408" y1="74" x2="444" y2="74" marker-end="url(#m22)"/><text x="426" y="34" text-anchor="middle" class="t-accent">reports</text><rect class="box-accent" x="446" y="42" width="104" height="64" rx="8"/><text x="498" y="70" text-anchor="middle">Result</text><text x="498" y="86" text-anchor="middle" class="t-muted">tick or cross</text>
+</svg>
+<figcaption>An event starts the workflow. The result lands on your PR.</figcaption>
+</figure>
+<ul>
+<li><b>Event.</b> What starts it. Set with <code>on</code>.</li>
+<li><b>Job.</b> A group of steps.</li>
+<li><b>Runner.</b> The temporary computer GitHub lends to run a job.</li>
+<li><b>Step.</b> One task. Either a shell command (<code>run</code>) or a ready-made helper (<code>uses</code>).</li>
+</ul>
+<pre><code>name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test</code></pre>
+<p>Read it as: on every PR and every push to main, download the code, install Node, install the libraries and run the tests. Results show on the PR and in the <b>Actions</b> tab. Click a run to read its log.</p>
+<p>This is <b>CI</b> (continuous integration). It means every change is built and tested automatically. Problems show up before the merge. Pair it with a required check (a gate in your branch rules). Then broken code cannot reach main.</p>
+<p>Other triggers: <code>schedule</code> (a timer, for nightly jobs), <code>workflow_dispatch</code> (a manual Run button) and <code>release</code>. Public repos run Actions free. Private repos get a monthly free allowance. Check the pricing page before heavy use.</p>
+<p>Two safety habits. Set <code>permissions:</code> to the least the job needs. And treat other people's actions as code you are running. Prefer well-known ones. Check each action's page for its latest version.</p>
+<aside class="yours"><h4>In your project</h4><p>Start with one workflow that runs your tests and build on every PR. It is ten lines. It catches the "it worked until I touched that other file" problem.</p></aside><aside class="say"><h4>Say it like this</h4><p>CI is red because the lint step failed. Check the Actions log. It is a missing semicolon.</p></aside>
+</article>
+<article class="ch" id="actions-secrets" data-part="Automation and shipping" data-title="Secrets, variables and environments">
+
+<p class="lead">Workflows often need passwords and keys. GitHub stores them encrypted, so they never go in your code.</p>
+<p>Go to Settings, then Secrets and variables. You can add two kinds:</p>
+<ul>
+<li><b>Secrets.</b> Encrypted values, like deploy keys and API tokens. Once saved, you cannot read them again. You can only replace them. Use one as <code>${{ secrets.DEPLOY_TOKEN }}</code>. GitHub hides it in logs.</li>
+<li><b>Variables.</b> Plain settings that are not private, like a site URL. Use one as <code>${{ vars.SITE_URL }}</code>.</li>
+</ul>
+<figure class="fig">
+<svg viewBox="0 0 560 145" role="img" aria-label="Diagram: a secret is saved encrypted in GitHub settings, a workflow uses it by name, and the value is hidden in the logs">
+<defs><marker id="m23" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box-accent" x="10" y="42" width="152" height="64" rx="8"/><text x="86" y="62" text-anchor="middle">Settings</text><text x="86" y="78" text-anchor="middle" class="t-muted">secret saved,</text><text x="86" y="94" text-anchor="middle" class="t-muted">encrypted</text><line class="arrow" x1="165" y1="74" x2="201" y2="74" marker-end="url(#m23)"/><rect class="box" x="204" y="42" width="152" height="64" rx="8"/><text x="280" y="70" text-anchor="middle">Workflow</text><text x="280" y="86" text-anchor="middle" class="t-muted">uses it by name</text><line class="arrow" x1="359" y1="74" x2="395" y2="74" marker-end="url(#m23)"/><rect class="box" x="398" y="42" width="152" height="64" rx="8"/><text x="474" y="70" text-anchor="middle">Logs</text><text x="474" y="86" text-anchor="middle" class="t-muted">value is hidden</text>
+</svg>
+<figcaption>The workflow uses the secret by name. It never sees the value in your code.</figcaption>
+</figure>
+<p>An <b>environment</b> is a named target, like <code>staging</code> or <code>production</code>. Each can have its own secrets. You can also require a person to click approve before a deploy to production.</p>
+<p>Two limits. Workflows started by a PR from a <b>fork</b> (someone else's copy) do not get your secrets. Otherwise a stranger could write a PR that steals them. And never <code>echo</code> (print) a secret in a step.</p>
+<p>Better still, avoid stored keys. For big clouds, Actions can use <b>OIDC</b>. OIDC lets a workflow ask for a short-lived temporary token. There is no long-lived secret to leak.</p>
+<aside class="say"><h4>Say it like this</h4><p>The deploy token lives in the production environment's secrets, and prod needs a manual approval.</p></aside>
+</article>
+<article class="ch" id="pages" data-part="Automation and shipping" data-title="GitHub Pages and deploying">
+
+<p class="lead">Pages turns a repo into a free website. The same push-to-deploy idea works on other hosts too.</p>
+<p><b>GitHub Pages</b> hosts <b>static</b> sites. Static means plain files: HTML, CSS and JavaScript. It serves them from your repo at <code>you.github.io/project</code> or on your own domain. Switch it on in Settings, then Pages. It is free for public repos. Private repos need a paid plan.</p>
+<p>If your site needs a build step (for example Astro or Vite), choose "GitHub Actions" as the source. If you need a server or a database, use a host that runs code.</p>
+<p>On any host the pattern is <b>push to deploy</b>. Connect a host to your repo. Examples: Cloudflare, Vercel, Netlify, Render. Every merge to main then builds and publishes your site.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 140" role="img" aria-label="Flowchart: merge to main triggers a build, the build is deployed, and the live site updates; a pull request gets a preview link first">
+<defs><marker id="m24" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="42" width="104" height="64" rx="8"/><text x="62" y="78" text-anchor="middle">Merge to main</text><line class="arrow" x1="116" y1="74" x2="152" y2="74" marker-end="url(#m24)"/><rect class="box" x="156" y="42" width="104" height="64" rx="8"/><text x="208" y="70" text-anchor="middle">Build</text><text x="208" y="86" text-anchor="middle" class="t-muted">make the site</text><line class="arrow" x1="262" y1="74" x2="298" y2="74" marker-end="url(#m24)"/><rect class="box" x="301" y="42" width="104" height="64" rx="8"/><text x="353" y="70" text-anchor="middle">Deploy</text><text x="353" y="86" text-anchor="middle" class="t-muted">upload it</text><line class="arrow" x1="408" y1="74" x2="444" y2="74" marker-end="url(#m24)"/><rect class="box-accent" x="446" y="42" width="104" height="64" rx="8"/><text x="498" y="70" text-anchor="middle">Live site</text><text x="498" y="86" text-anchor="middle" class="t-muted">visitors see it</text>
+</svg>
+<figcaption>Merging is the button that ships. Previews let you check before you merge.</figcaption>
+</figure>
+<p>Many hosts also make a <b>preview deployment</b> for each PR. That is a throwaway web address showing that exact branch. Share it for review before you merge.</p>
+<p>Tie the live deploy to main only. Make sure checks pass first.</p>
+<aside class="yours"><h4>In your project</h4><p>Preview links are great for vibe-coded projects. You see the real result of every change. You can send the link to a friend before it goes live.</p></aside><aside class="say"><h4>Say it like this</h4><p>Merge to main and it deploys. Use the preview link on the PR to check it first.</p></aside>
+</article>
+<article class="ch" id="releases" data-part="Automation and shipping" data-title="Tags, releases and versions">
+
+<p class="lead">A release is a named, numbered snapshot of your project that people can download or depend on.</p>
+<p>A <b>tag</b> is a name on one commit, like <code>v1.4.2</code>. A <b>GitHub Release</b> sits on top of a tag. It adds a title, notes about what changed and optional files to download. Make one from the Releases section of the repo page. Or run <code>gh release create v1.4.2</code>. GitHub can write the notes from your merged PRs.</p>
+<p>Most projects use <b>semantic versioning</b> (<b>semver</b>). The number has three parts: <code>MAJOR.MINOR.PATCH</code>.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 125" role="img" aria-label="Diagram: a version number such as 2.5.1 has three parts: major for breaking changes, minor for new features, patch for bug fixes">
+<text x="110" y="62" text-anchor="middle" style="font-size:44px;font-weight:600">2</text><text x="110" y="88" text-anchor="middle" class="t-accent">MAJOR</text><text x="110" y="106" text-anchor="middle" class="t-muted">breaking change</text><text x="170" y="62" text-anchor="middle" style="font-size:44px">.</text><text x="280" y="62" text-anchor="middle" style="font-size:44px;font-weight:600">5</text><text x="280" y="88" text-anchor="middle" class="t-accent">MINOR</text><text x="280" y="106" text-anchor="middle" class="t-muted">new feature</text><text x="340" y="62" text-anchor="middle" style="font-size:44px">.</text><text x="450" y="62" text-anchor="middle" style="font-size:44px;font-weight:600">1</text><text x="450" y="88" text-anchor="middle" class="t-accent">PATCH</text><text x="450" y="106" text-anchor="middle" class="t-muted">bug fix</text>
+</svg>
+<figcaption>Version 2.5.1 read left to right: major, minor, patch.</figcaption>
+</figure><div class="tbl"><table>
+<tr><th>Bump</th><th>When</th><th>Example</th></tr>
+<tr><td>PATCH</td><td>A bug fix. Nothing else changes.</td><td>1.4.2 to 1.4.3</td></tr>
+<tr><td>MINOR</td><td>A new feature. Old things still work.</td><td>1.4.3 to 1.5.0</td></tr>
+<tr><td>MAJOR</td><td>A breaking change. Users must adapt.</td><td>1.5.0 to 2.0.0</td></tr>
+</table></div>
+<p>A <b>changelog</b> tells users what is new and what to watch for. It can be a <code>CHANGELOG.md</code> file or the release notes. A <b>pre-release</b> tag like <code>v2.0.0-beta.1</code> says "for testing, not final".</p>
+<p>A release and a deploy are different things. A release gives a version a name. A deploy puts some version on a server.</p>
+<aside class="say"><h4>Say it like this</h4><p>It is a breaking change, so that is a major bump. Tag v2.0.0 and write it up in the release notes.</p></aside>
+</article>
+<article class="ch" id="security-features" data-part="Automation and shipping" data-title="Dependabot and GitHub&#x27;s security tools">
+
+<p class="lead">Most security problems in small projects come from old libraries and leaked keys. GitHub watches for both.</p>
+<p>A <b>dependency</b> is a library your project uses. Libraries get bug reports and security holes over time. Dependabot is GitHub's helper for this.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 140" role="img" aria-label="Flowchart: a library you use has a known security hole, Dependabot raises an alert, opens a pull request with the upgrade, you check the tests and merge">
+<defs><marker id="m25" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="42" width="104" height="64" rx="8"/><text x="62" y="70" text-anchor="middle">A library has</text><text x="62" y="86" text-anchor="middle" class="t-muted">a security hole</text><line class="arrow" x1="116" y1="74" x2="152" y2="74" marker-end="url(#m25)"/><rect class="box" x="156" y="42" width="104" height="64" rx="8"/><text x="208" y="70" text-anchor="middle">Alert</text><text x="208" y="86" text-anchor="middle" class="t-muted">Dependabot warns you</text><line class="arrow" x1="262" y1="74" x2="298" y2="74" marker-end="url(#m25)"/><rect class="box" x="301" y="42" width="104" height="64" rx="8"/><text x="353" y="70" text-anchor="middle">Upgrade PR</text><text x="353" y="86" text-anchor="middle" class="t-muted">opened for you</text><line class="arrow" x1="408" y1="74" x2="444" y2="74" marker-end="url(#m25)"/><rect class="box-accent" x="446" y="42" width="104" height="64" rx="8"/><text x="498" y="70" text-anchor="middle">You merge</text><text x="498" y="86" text-anchor="middle" class="t-muted">if checks pass</text>
+</svg>
+<figcaption>Dependabot does the boring part. You review and merge.</figcaption>
+</figure>
+<p>Open the Security tab. These tools are free for public repos:</p>
+<ul>
+<li><b>Dependabot alerts</b> warn you about vulnerable libraries.</li>
+<li><b>Dependabot security updates</b> open a PR that upgrades the library.</li>
+<li><b>Dependabot version updates</b> open regular PRs to keep libraries fresh. You set them in <code>.github/dependabot.yml</code>. Small steady upgrades beat one giant upgrade.</li>
+<li><b>Secret scanning</b> and <b>push protection</b> catch leaked keys.</li>
+<li><b>Code scanning</b> (CodeQL) reads your code for common security mistakes.</li>
+<li><b>Private vulnerability reporting</b> lets people tell you about a hole in private.</li>
+</ul>
+<pre><code>version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"</code></pre>
+<p>A <b>lockfile</b> (like <code>package-lock.json</code>) records the exact library versions you use. Commit it. Still test Dependabot PRs. Green checks make them safe to merge fast.</p>
+<aside class="yours"><h4>In your project</h4><p>Turn on Dependabot alerts and security updates today. It takes two clicks. It is the cheapest security win there is.</p></aside><aside class="say"><h4>Say it like this</h4><p>Dependabot opened a PR for the vulnerable package. CI is green, so merge it.</p></aside>
+</article>
+<article class="ch" id="ai-safety" data-part="Working with AI tools" data-title="Git as the safety net for AI coding">
+
+<p class="lead">AI tools can change dozens of files in seconds. Git is how you stay in control.</p>
+<p>The risk is not that AI is always wrong. The risk is that changes are big and fast. They are hard to follow. A few habits make this safe:</p>
+<figure class="fig">
+<svg viewBox="0 0 560 135" role="img" aria-label="Flowchart: commit your work first, make a branch, let the AI edit, read the diff and test, then keep the result or reset">
+<defs><marker id="m26" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="42" width="84" height="64" rx="8"/><text x="52" y="70" text-anchor="middle">1. Commit</text><text x="52" y="86" text-anchor="middle" class="t-muted">save what works</text><line class="arrow" x1="97" y1="74" x2="121" y2="74" marker-end="url(#m26)"/><rect class="box" x="124" y="42" width="84" height="64" rx="8"/><text x="166" y="70" text-anchor="middle">2. Branch</text><text x="166" y="86" text-anchor="middle" class="t-muted">git switch -c</text><line class="arrow" x1="211" y1="74" x2="235" y2="74" marker-end="url(#m26)"/><rect class="box" x="238" y="42" width="84" height="64" rx="8"/><text x="280" y="78" text-anchor="middle">3. AI edits</text><line class="arrow" x1="325" y1="74" x2="349" y2="74" marker-end="url(#m26)"/><rect class="box" x="352" y="42" width="84" height="64" rx="8"/><text x="394" y="70" text-anchor="middle">4. Read diff</text><text x="394" y="86" text-anchor="middle" class="t-muted">and test</text><line class="arrow" x1="439" y1="74" x2="463" y2="74" marker-end="url(#m26)"/><rect class="box-accent" x="466" y="42" width="84" height="64" rx="8"/><text x="508" y="70" text-anchor="middle">5. Keep</text><text x="508" y="86" text-anchor="middle" class="t-muted">or reset</text>
+</svg>
+<figcaption>Save, branch, edit, check, then keep or throw away.</figcaption>
+</figure>
+<ol>
+<li><b>Start clean.</b> Run <code>git status</code>. Commit or stash first. Then the AI's changes are the only ones in the diff.</li>
+<li><b>Use a branch.</b> <code>git switch -c try-new-header</code>. If it goes wrong, delete the branch.</li>
+<li><b>Commit after each working step.</b> Each success is a save point.</li>
+<li><b>Read the diff before you commit.</b> Look for deleted files, changed settings, new libraries and anything that looks like a key.</li>
+<li><b>Run it.</b> "It compiled" does not mean "it works".</li>
+<li><b>If it spirals, stop and reset.</b> <code>git restore .</code> throws away uncommitted edits. New untracked files stay, so check <code>git status</code>. <code>git reset --hard</code> goes back to the last commit. A fresh start with a clear prompt beats ten rounds of patching.</li>
+</ol>
+<p>Be careful with commands you do not understand. Especially ones that delete files, rewrite history (<code>--force</code>, <code>reset --hard</code>) or install unknown packages. Never paste secrets into prompts.</p>
+<aside class="warn"><h4>Careful</h4><p>Never give an AI tool your <code>.env</code> contents, tokens or private keys. Check that <code>.env</code> is in <code>.gitignore</code> before any tool "commits everything".</p></aside><aside class="say"><h4>Say it like this</h4><p>I committed before I let the agent loose. If it made a mess, I just reset.</p></aside>
+</article>
+<article class="ch" id="ai-agents" data-part="Working with AI tools" data-title="AI agents, pull requests and review">
+
+<p class="lead">Coding agents can now open pull requests themselves. That makes the PR and its checks your main control point.</p>
+<p>An <b>agent</b> is an AI tool that does a whole task by itself. Some agents read an issue, write code on a branch and open a PR. Examples: GitHub's Copilot coding agent and Claude Code. Treat its PR like one from a new teammate. It needs a clear description, passing checks and a human reading the diff.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 135" role="img" aria-label="Flowchart: you write an issue, the agent makes a branch and a PR, checks run, you review the diff, and you merge">
+<defs><marker id="m27" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="42" width="84" height="64" rx="8"/><text x="52" y="70" text-anchor="middle">You write</text><text x="52" y="86" text-anchor="middle" class="t-muted">an issue</text><line class="arrow" x1="97" y1="74" x2="121" y2="74" marker-end="url(#m27)"/><rect class="box" x="124" y="42" width="84" height="64" rx="8"/><text x="166" y="70" text-anchor="middle">Agent</text><text x="166" y="86" text-anchor="middle" class="t-muted">branch + PR</text><line class="arrow" x1="211" y1="74" x2="235" y2="74" marker-end="url(#m27)"/><rect class="box" x="238" y="42" width="84" height="64" rx="8"/><text x="280" y="70" text-anchor="middle">Checks</text><text x="280" y="86" text-anchor="middle" class="t-muted">run on the PR</text><line class="arrow" x1="325" y1="74" x2="349" y2="74" marker-end="url(#m27)"/><rect class="box-accent" x="352" y="42" width="84" height="64" rx="8"/><text x="394" y="70" text-anchor="middle">You review</text><text x="394" y="86" text-anchor="middle" class="t-muted">the diff</text><line class="arrow" x1="439" y1="74" x2="463" y2="74" marker-end="url(#m27)"/><rect class="box" x="466" y="42" width="84" height="64" rx="8"/><text x="508" y="78" text-anchor="middle">Merge</text>
+</svg>
+<figcaption>You stay the editor. The agent is the writer.</figcaption>
+</figure>
+<ul>
+<li><b>Write clear issues.</b> Say what you want, why, and how you will know it is done.</li>
+<li><b>Keep tasks small.</b> One task, one small PR.</li>
+<li><b>Let checks review first.</b> Tests and linters (tools that spot style and simple errors) catch many AI mistakes. No tests? Ask for them in the same change.</li>
+<li><b>Look for typical AI mistakes.</b> Made-up functions or libraries. Deleted tests. Copy-pasted code. Hard-coded values. Missing error handling.</li>
+<li><b>Protect main.</b> Branch rules mean an agent cannot push there directly. A human must approve.</li>
+<li><b>Limit its access.</b> Give tokens the least power and shortest life that works. Keep production secrets out of reach.</li>
+</ul>
+<p>AI can also be a <em>reviewer</em>. Copilot code review and similar tools comment on PRs. They are an extra pair of eyes. They do not replace yours.</p>
+<aside class="yours"><h4>In your project</h4><p>A loop that works: write an issue, let the tool open a PR, read the diff, let checks run, ask for fixes, then merge.</p></aside><aside class="say"><h4>Say it like this</h4><p>The agent's PR touches forty files for a one-line change. Send it back and ask for a smaller diff.</p></aside>
+</article>
+<article class="ch" id="gh-cli" data-part="Working with AI tools" data-title="The GitHub CLI">
+
+<p class="lead">The <code>gh</code> command lets you do GitHub things from your terminal. No browser needed.</p>
+<p>CLI means command-line interface: a tool you type commands into. <code>gh</code> is separate from Git. Git handles commits and branches. <code>gh</code> handles GitHub's website features: PRs, issues and releases. Install it. Then run <code>gh auth login</code> once.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 135" role="img" aria-label="Diagram: git talks about commits and branches on your laptop; gh talks to GitHub for pull requests, issues and releases">
+<defs><marker id="m28" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="42" width="104" height="64" rx="8"/><text x="62" y="70" text-anchor="middle">git</text><text x="62" y="86" text-anchor="middle" class="t-muted">commits, branches</text><line class="arrow" x1="116" y1="74" x2="152" y2="74" marker-end="url(#m28)"/><rect class="box" x="156" y="42" width="104" height="64" rx="8"/><text x="208" y="78" text-anchor="middle">Your laptop</text><line class="arrow" x1="262" y1="74" x2="298" y2="74" marker-end="url(#m28)"/><text x="280" y="34" text-anchor="middle" class="t-accent">talks to</text><rect class="box-accent" x="301" y="42" width="104" height="64" rx="8"/><text x="353" y="70" text-anchor="middle">gh</text><text x="353" y="86" text-anchor="middle" class="t-muted">PRs, issues, releases</text><line class="arrow" x1="408" y1="74" x2="444" y2="74" marker-end="url(#m28)"/><rect class="box" x="446" y="42" width="104" height="64" rx="8"/><text x="498" y="78" text-anchor="middle">GitHub</text>
+</svg>
+<figcaption>Two tools, two jobs.</figcaption>
+</figure>
+<pre><code>gh repo create my-app --private --source=. --push
+gh pr create --fill          # open a PR from your commit messages
+gh pr status                 # your PRs and their checks
+gh pr checkout 123           # fetch someone's PR to try it
+gh pr merge --squash --delete-branch
+gh issue create --title "Fix login bug"
+gh run list                  # recent Actions runs
+gh run view --log-failed     # why did CI fail?</code></pre>
+<p>It is handy for scripts and AI tools, because the commands are plain text. Many coding agents use <code>gh</code> behind the scenes to open PRs and read test results.</p>
+<aside class="say"><h4>Say it like this</h4><p>Just run gh pr checkout and try it locally. No need to add their fork as a remote.</p></aside>
+</article>
+<article class="ch" id="codespaces" data-part="Working with AI tools" data-title="Codespaces and editing in the browser">
+
+<p class="lead">You do not always need to install anything. GitHub can give you a full editor in a browser tab.</p>
+<ul>
+<li><b>github.dev.</b> Press <code>.</code> on any repo page. You get a light version of VS Code in your browser. Good for quick edits. It cannot run your app.</li>
+<li><b>Codespaces.</b> A full computer in the cloud, set up for your repo. It has a terminal and your tools. Open one from the Code button. There is a monthly free allowance. It stops when idle. Delete the ones you no longer need.</li>
+<li><b>Dev containers.</b> A file at <code>.devcontainer/devcontainer.json</code> that describes the setup. Everyone gets the same environment. That ends "works on my machine".</li>
+</ul>
+<figure class="fig">
+<svg viewBox="0 0 560 140" role="img" aria-label="Diagram: from the repo page you open a Codespace, a cloud computer with your tools, and edit and run code in your browser">
+<defs><marker id="m29" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="42" width="152" height="64" rx="8"/><text x="86" y="70" text-anchor="middle">Repo page</text><text x="86" y="86" text-anchor="middle" class="t-muted">Code button</text><line class="arrow" x1="165" y1="74" x2="201" y2="74" marker-end="url(#m29)"/><text x="183" y="34" text-anchor="middle" class="t-accent">opens</text><rect class="box-accent" x="204" y="42" width="152" height="64" rx="8"/><text x="280" y="70" text-anchor="middle">Codespace</text><text x="280" y="86" text-anchor="middle" class="t-muted">a cloud computer</text><line class="arrow" x1="359" y1="74" x2="395" y2="74" marker-end="url(#m29)"/><text x="377" y="34" text-anchor="middle" class="t-accent">shows</text><rect class="box" x="398" y="42" width="152" height="64" rx="8"/><text x="474" y="70" text-anchor="middle">Your browser</text><text x="474" y="86" text-anchor="middle" class="t-muted">edit and run</text>
+</svg>
+<figcaption>Your browser is just the window. The computer is in the cloud.</figcaption>
+</figure>
+<p>For a tiny fix like a typo, use the pencil icon on a file. GitHub offers to save it on a new branch and open a PR in one go.</p>
+<aside class="say"><h4>Say it like this</h4><p>Spin up a codespace instead of installing everything. The devcontainer has the whole setup.</p></aside>
+</article>
+<article class="ch" id="errors" data-part="When things go wrong" data-title="Common errors and how to fix them">
+
+<p class="lead">Nearly every Git panic is one of these. None of them is the end of the world.</p>
+<div class="tbl"><table>
+<tr><th>What you see</th><th>What it means and what to do</th></tr>
+<tr><td><code>rejected ... (fetch first)</code> or <code>non-fast-forward</code></td><td>GitHub has commits you do not have. Run <code>git pull</code> (or <code>git pull --rebase</code>). Fix any conflicts. Push again.</td></tr>
+<tr><td><code>CONFLICT (content): Merge conflict in file</code></td><td>Two edits touched the same lines. Open the file. Fix the marker lines. Run <code>git add</code>, then commit. Or run <code>git merge --abort</code> to go back.</td></tr>
+<tr><td><code>You are in 'detached HEAD' state</code></td><td>You are on a single commit, not on a branch. Commits made here are easy to lose. To keep them: <code>git switch -c new-name</code>. To leave: <code>git switch main</code>.</td></tr>
+<tr><td>I committed on <code>main</code> by mistake</td><td>Before pushing, run <code>git branch fix/my-change</code>. That saves the commit on a new branch. Then run <code>git reset --hard origin/main</code> while on main. Then switch to the new branch.</td></tr>
+<tr><td>My commit message is wrong</td><td>Not pushed yet? Run <code>git commit --amend</code>. Already pushed? Leave it and move on.</td></tr>
+<tr><td><code>Permission denied (publickey)</code></td><td>GitHub does not know your SSH key. Add the public key in Settings, SSH and GPG keys. Or use HTTPS with <code>gh auth login</code>.</td></tr>
+<tr><td><code>Authentication failed</code> over HTTPS</td><td>Passwords no longer work. Sign in with <code>gh auth login</code>, a credential manager or a token.</td></tr>
+<tr><td><code>file exceeds GitHub's file size limit of 100 MB</code></td><td>Remove the file from the commit. Add it to <code>.gitignore</code>. If it truly must be tracked, use <b>Git LFS</b> (a tool for big files).</td></tr>
+<tr><td>My changes are missing from <code>git status</code></td><td>The file may be gitignored. Or you are in the wrong folder or branch. Check <code>git branch</code> and <code>pwd</code>.</td></tr>
+<tr><td>Wrong name or email on a commit</td><td>Fix your <code>git config</code> for next time. For the last commit (not pushed): <code>git commit --amend --reset-author</code>.</td></tr>
+<tr><td>I deleted a branch or lost commits</td><td>Run <code>git reflog</code>. Find the commit. Run <code>git switch -c rescued a1b2c3d</code>.</td></tr>
+</table></div>
+<p>A word on <code>--force</code>. <code>git push --force</code> overwrites the branch on GitHub with yours. It can destroy other people's commits. If you must (for example after rebasing your own branch), use <code>git push --force-with-lease</code>. It refuses if someone else pushed meanwhile. Never force-push to main.</p>
+<aside class="say"><h4>Say it like this</h4><p>I am in detached HEAD. Let me make a branch from here before I lose anything.</p></aside>
+</article>
+<article class="ch" id="mixups" data-part="When things go wrong" data-title="Terms that are often mixed up">
+
+<p class="lead">Pairs that sound alike but mean different things. Getting these right is where credibility shows.</p>
+<div class="tbl"><table>
+<tr><th>Often confused</th><th>The difference</th></tr>
+<tr><td>Git vs GitHub</td><td>The tool on your computer versus a website that hosts Git repos and adds teamwork.</td></tr>
+<tr><td>Fork vs clone</td><td>A fork is a copy on GitHub under your account. A clone is a copy on your computer. You often do both.</td></tr>
+<tr><td>Fork vs branch</td><td>A branch is a line of work inside one repo. A fork is a whole separate repo.</td></tr>
+<tr><td>Fetch vs pull</td><td>Fetch downloads without touching your files. Pull is fetch plus a merge.</td></tr>
+<tr><td>Commit vs push</td><td>Commit saves a snapshot on your computer. Push uploads commits to GitHub.</td></tr>
+<tr><td>Merge vs rebase</td><td>A merge joins histories with a merge commit. A rebase copies your commits onto the end, with new IDs.</td></tr>
+<tr><td>Revert vs reset</td><td>Revert adds a new commit that undoes an old one. Reset moves the branch back.</td></tr>
+<tr><td>Pull request vs merge request</td><td>Same thing. GitHub says pull request. GitLab says merge request.</td></tr>
+<tr><td>Issue vs pull request</td><td>An issue describes a problem or idea. A PR holds code to deal with it.</td></tr>
+<tr><td>Tag vs release</td><td>A tag names a commit. A release is a GitHub page built on a tag, with notes and files.</td></tr>
+<tr><td>Release vs deploy</td><td>Naming a version versus putting a version on a server.</td></tr>
+<tr><td>CI vs CD</td><td>CI tests every change automatically. CD ships it automatically.</td></tr>
+<tr><td>Secret vs variable (in Actions)</td><td>Secrets are encrypted and hidden. Variables are plain settings that are not private.</td></tr>
+<tr><td>Private vs public repo</td><td>Only people you invite can see it, versus everyone on the internet.</td></tr>
+<tr><td>Star vs watch vs fork</td><td>Bookmark, get notifications, copy to your account.</td></tr>
+<tr><td><code>origin</code> vs <code>upstream</code></td><td>Origin is where you cloned from (often your fork). Upstream is the original project you forked.</td></tr>
+</table></div>
+</article>
+<article class="ch" id="talk" data-part="When things go wrong" data-title="Describing your workflow like an engineer">
+
+<p class="lead">Putting it together: the same way of working, said three ways.</p>
+<p>Engineers describe a workflow in order. They name each step and its safeguard. Here is a solo project at three levels of detail.</p>
+<p><b>The one-liner:</b></p>
+<aside class="say"><p>"Everything goes through short-lived branches and pull requests. CI runs the tests. Merging to main deploys."</p></aside>
+<p><b>The thirty-second version:</b></p>
+<aside class="say"><p>"Main is protected, so I never commit to it directly. For each change I branch off, commit in small steps, push and open a PR. The PR runs the build and tests with GitHub Actions and gets a preview link. I read my own diff, squash-merge, and the branch deletes itself. Merging to main deploys to production."</p></aside>
+<p><b>The team answer, if someone asks about safety:</b></p>
+<aside class="say"><p>"Direct pushes and force pushes to main are blocked. A PR needs one approval and green checks. CODEOWNERS sends sensitive paths to the right reviewer. Secrets live in environment settings, not code. Dependabot and secret scanning are on. AI-written PRs get the same review as anyone's."</p></aside>
+<p>Notice the pattern: where work happens, how it is checked, how it lands, how it ships, and what stops mistakes. That works for any team.</p>
+
+</article>
+<article class="ch" id="cheatsheet" data-part="Reference" data-title="Command cheat sheet">
+
+<p class="lead">The commands you will use ninety percent of the time, in roughly the order you need them.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 130" role="img" aria-label="Flowchart of the daily loop: pull, make a branch, add, commit, push">
+<defs><marker id="m30" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs><rect class="box" x="10" y="42" width="84" height="64" rx="8"/><text x="52" y="70" text-anchor="middle">git pull</text><text x="52" y="86" text-anchor="middle" class="t-muted">get the latest</text><line class="arrow" x1="97" y1="74" x2="121" y2="74" marker-end="url(#m30)"/><rect class="box" x="124" y="42" width="84" height="64" rx="8"/><text x="166" y="70" text-anchor="middle">git switch -c</text><text x="166" y="86" text-anchor="middle" class="t-muted">new branch</text><line class="arrow" x1="211" y1="74" x2="235" y2="74" marker-end="url(#m30)"/><rect class="box" x="238" y="42" width="84" height="64" rx="8"/><text x="280" y="70" text-anchor="middle">git add</text><text x="280" y="86" text-anchor="middle" class="t-muted">stage changes</text><line class="arrow" x1="325" y1="74" x2="349" y2="74" marker-end="url(#m30)"/><rect class="box" x="352" y="42" width="84" height="64" rx="8"/><text x="394" y="70" text-anchor="middle">git commit</text><text x="394" y="86" text-anchor="middle" class="t-muted">save snapshot</text><line class="arrow" x1="439" y1="74" x2="463" y2="74" marker-end="url(#m30)"/><rect class="box-accent" x="466" y="42" width="84" height="64" rx="8"/><text x="508" y="70" text-anchor="middle">git push</text><text x="508" y="86" text-anchor="middle" class="t-muted">upload</text>
+</svg>
+<figcaption>The daily loop in five commands.</figcaption>
+</figure>
+<h4>Set up</h4>
+<div class="tbl"><table>
+<tr><th>Command</th><th>What it does</th></tr>
+<tr><td><code>git clone &lt;url&gt;</code></td><td>Download a repo.</td></tr>
+<tr><td><code>git init</code></td><td>Turn the current folder into a repo.</td></tr>
+<tr><td><code>git remote -v</code></td><td>Show linked copies and their addresses.</td></tr>
+<tr><td><code>git config --global user.name "Name"</code></td><td>Set who your commits are from.</td></tr>
+</table></div>
+<h4>Daily loop</h4>
+<div class="tbl"><table>
+<tr><th>Command</th><th>What it does</th></tr>
+<tr><td><code>git status</code></td><td>What changed, and which branch you are on.</td></tr>
+<tr><td><code>git pull</code></td><td>Get the latest from GitHub.</td></tr>
+<tr><td><code>git switch -c name</code></td><td>Make a new branch and move to it.</td></tr>
+<tr><td><code>git add file</code> / <code>git add -p</code></td><td>Stage a file / stage chosen chunks.</td></tr>
+<tr><td><code>git commit -m "message"</code></td><td>Save the staged changes as a commit.</td></tr>
+<tr><td><code>git push -u origin name</code></td><td>Upload a new branch (first time).</td></tr>
+<tr><td><code>git push</code></td><td>Upload new commits.</td></tr>
+</table></div>
+<h4>Look around</h4>
+<div class="tbl"><table>
+<tr><th>Command</th><th>What it does</th></tr>
+<tr><td><code>git diff</code> / <code>git diff --staged</code></td><td>See unstaged / staged changes.</td></tr>
+<tr><td><code>git log --oneline --graph</code></td><td>Short history with the branch shape.</td></tr>
+<tr><td><code>git show &lt;hash&gt;</code></td><td>One commit in full.</td></tr>
+<tr><td><code>git blame file</code></td><td>Who last changed each line.</td></tr>
+<tr><td><code>git branch</code></td><td>List branches.</td></tr>
+</table></div>
+<h4>Combine and undo</h4>
+<div class="tbl"><table>
+<tr><th>Command</th><th>What it does</th></tr>
+<tr><td><code>git merge name</code></td><td>Merge a branch into the current one.</td></tr>
+<tr><td><code>git rebase main</code></td><td>Copy your branch onto the end of main.</td></tr>
+<tr><td><code>git stash</code> / <code>git stash pop</code></td><td>Shelve / bring back unsaved changes.</td></tr>
+<tr><td><code>git restore file</code></td><td>Throw away unsaved edits to a file.</td></tr>
+<tr><td><code>git restore --staged file</code></td><td>Unstage a file.</td></tr>
+<tr><td><code>git commit --amend</code></td><td>Fix the last commit (before pushing).</td></tr>
+<tr><td><code>git revert &lt;hash&gt;</code></td><td>Undo a commit with a new commit.</td></tr>
+<tr><td><code>git reflog</code></td><td>Find commits you thought were lost.</td></tr>
+<tr><td><code>git merge --abort</code> / <code>git rebase --abort</code></td><td>Back out of a merge or rebase.</td></tr>
+</table></div>
+<h4>GitHub CLI</h4>
+<div class="tbl"><table>
+<tr><th>Command</th><th>What it does</th></tr>
+<tr><td><code>gh auth login</code></td><td>Sign in once.</td></tr>
+<tr><td><code>gh pr create --fill</code></td><td>Open a PR from the current branch.</td></tr>
+<tr><td><code>gh pr checkout 123</code></td><td>Try someone else's PR on your computer.</td></tr>
+<tr><td><code>gh pr merge --squash</code></td><td>Merge a PR as one commit.</td></tr>
+<tr><td><code>gh run view --log-failed</code></td><td>See why CI failed.</td></tr>
+</table></div>
+</article>
+<!-- GLOSSARY -->
+<article class="ch" id="glossary" data-part="Reference" data-title="Glossary">
+<p class="lead">Quick definitions. Filter to jump to a term.</p>
+<input class="search gloss-filter" id="gloss-filter" type="search" placeholder="Filter terms" aria-label="Filter glossary">
+<dl class="gloss" id="gloss">
+<dt>Actions (GitHub Actions)</dt><dd>GitHub's built-in automation that runs workflows when things happen in a repo.</dd>
+<dt>Amend</dt><dd>Rewrite the most recent commit, for example to fix its message. Only before pushing.</dd>
+<dt>Base branch</dt><dd>The branch a pull request will be merged into, usually main.</dd>
+<dt>Blame</dt><dd>A view showing who last changed each line of a file, and in which commit.</dd>
+<dt>Branch</dt><dd>A movable label pointing at a commit, used as a separate line of work.</dd>
+<dt>Branch protection</dt><dd>Rules that must be met before changes can land on a branch, such as reviews and passing checks.</dd>
+<dt>Check / status check</dt><dd>An automated pass or fail result shown on a pull request.</dd>
+<dt>Cherry-pick</dt><dd>Copy a single commit from one branch onto another.</dd>
+<dt>CI / CD</dt><dd>Continuous integration (test every change) and continuous delivery or deployment (ship it).</dd>
+<dt>Clone</dt><dd>Download a full copy of a repo, history included.</dd>
+<dt>CODEOWNERS</dt><dd>A file mapping parts of a repo to the people or teams who review changes there.</dd>
+<dt>Collaborator</dt><dd>A person given access to a repo that isn't theirs.</dd>
+<dt>Commit</dt><dd>A saved snapshot of the project with a message, author and unique hash.</dd>
+<dt>Conflict</dt><dd>Two changes touching the same lines, which Git asks a human to resolve.</dd>
+<dt>Conventional Commits</dt><dd>A naming style for commit messages such as feat: or fix:.</dd>
+<dt>Dependabot</dt><dd>GitHub's tool for alerting you about vulnerable dependencies and opening upgrade PRs.</dd>
+<dt>Dependency</dt><dd>A library or package your project relies on.</dd>
+<dt>Detached HEAD</dt><dd>Being on a specific commit rather than on a branch.</dd>
+<dt>Diff</dt><dd>A line-by-line view of what changed between two versions.</dd>
+<dt>Draft PR</dt><dd>A pull request marked as work in progress that can't be merged yet.</dd>
+<dt>Environment</dt><dd>A named deploy target, such as staging or production, with its own secrets and rules.</dd>
+<dt>Fast-forward</dt><dd>A merge where Git just moves the branch pointer forward because nothing diverged.</dd>
+<dt>Feature flag</dt><dd>A switch in code that turns a feature on or off without redeploying.</dd>
+<dt>Fetch</dt><dd>Download new commits from a remote without changing your files.</dd>
+<dt>Fork</dt><dd>Your own copy of someone else's repo on GitHub.</dd>
+<dt>Force push</dt><dd>Overwriting a remote branch with your version. Use --force-with-lease if you must.</dd>
+<dt>Git LFS</dt><dd>Git Large File Storage, for tracking big files without bloating the repo.</dd>
+<dt>.gitignore</dt><dd>A file listing patterns Git should not track.</dd>
+<dt>GitHub flow</dt><dd>Branch off main, open a PR, review, merge, deploy. The simplest team workflow.</dd>
+<dt>Hash</dt><dd>The long ID of a commit, often shortened to seven characters.</dd>
+<dt>HEAD</dt><dd>The commit you're currently on, normally the tip of your current branch.</dd>
+<dt>Index</dt><dd>Another name for the staging area.</dd>
+<dt>Issue</dt><dd>A tracked bug, task or idea with a number and discussion thread.</dd>
+<dt>Label</dt><dd>A coloured tag on issues and PRs for sorting and filtering.</dd>
+<dt>Licence</dt><dd>A file stating how others may use your code.</dd>
+<dt>Local</dt><dd>The copy of a repo on your own computer.</dd>
+<dt>Lockfile</dt><dd>A file recording the exact dependency versions installed, which should be committed.</dd>
+<dt>main</dt><dd>The conventional name for a repo's primary branch.</dd>
+<dt>Markdown</dt><dd>Simple text formatting used in READMEs, issues and PR descriptions.</dd>
+<dt>Merge</dt><dd>Combine one branch's changes into another.</dd>
+<dt>Merge commit</dt><dd>A commit that joins two branches together.</dd>
+<dt>Milestone</dt><dd>A group of issues and PRs aimed at a goal or date.</dd>
+<dt>Organisation</dt><dd>A shared GitHub account that owns repos on behalf of a group.</dd>
+<dt>origin</dt><dd>The default name for the remote you cloned from.</dd>
+<dt>OIDC</dt><dd>A way for workflows to get short-lived cloud credentials instead of storing keys.</dd>
+<dt>Passkey</dt><dd>A phishing-resistant login stored on your device that replaces a password.</dd>
+<dt>PAT</dt><dd>Personal access token, a password-like string with limited powers for tools and scripts.</dd>
+<dt>Pull</dt><dd>Fetch from a remote and merge the new commits into your current branch.</dd>
+<dt>Pull request (PR)</dt><dd>A proposal to merge one branch into another, with discussion, review and checks.</dd>
+<dt>Push</dt><dd>Upload your local commits to a remote.</dd>
+<dt>Push protection</dt><dd>A GitHub feature that blocks pushes containing detected secrets.</dd>
+<dt>Rebase</dt><dd>Replay your commits on top of another branch, giving them new IDs.</dd>
+<dt>Reflog</dt><dd>A local log of where HEAD has been, used to recover lost commits.</dd>
+<dt>Release</dt><dd>A named, versioned snapshot on GitHub, with notes and optional files.</dd>
+<dt>Remote</dt><dd>A copy of the repo hosted elsewhere, usually on GitHub.</dd>
+<dt>Repository (repo)</dt><dd>A project folder together with its full history.</dd>
+<dt>Reset</dt><dd>Move a branch pointer to another commit, possibly discarding changes.</dd>
+<dt>Revert</dt><dd>Create a new commit that undoes an earlier one.</dd>
+<dt>Review</dt><dd>Feedback on a pull request, ending in comment, approve or request changes.</dd>
+<dt>Ruleset</dt><dd>GitHub's newer, more flexible alternative to branch protection rules.</dd>
+<dt>Runner</dt><dd>The machine that executes a GitHub Actions job.</dd>
+<dt>Secret</dt><dd>A credential such as an API key or password, which must never be committed.</dd>
+<dt>Secret scanning</dt><dd>GitHub's detection of leaked credentials in a repo.</dd>
+<dt>Semver</dt><dd>Semantic versioning, MAJOR.MINOR.PATCH, signalling how big a change is.</dd>
+<dt>Squash</dt><dd>Combine many commits into one, often when merging a PR.</dd>
+<dt>SSH key</dt><dd>A key pair used to prove who you are to GitHub without a password.</dd>
+<dt>Stage</dt><dd>Choose changes to include in the next commit with git add.</dd>
+<dt>Star</dt><dd>A bookmark and show of appreciation for a repo.</dd>
+<dt>Stash</dt><dd>Shelve uncommitted changes temporarily.</dd>
+<dt>Tag</dt><dd>A permanent label on a commit, often a version number.</dd>
+<dt>Trunk-based development</dt><dd>A workflow with very short-lived branches and frequent merges to main.</dd>
+<dt>Upstream</dt><dd>The original repo you forked, or the remote branch your local branch tracks.</dd>
+<dt>Workflow</dt><dd>A YAML file in .github/workflows that defines automation.</dd>
+<dt>Working tree</dt><dd>The actual files in your project folder that you edit.</dd>
+<dt>YAML</dt><dd>Indentation-based config format used by Actions and many other tools.</dd>
+</dl>
+</article>
+
+<div class="ch-actions" id="ch-actions" hidden>
+  <button class="btn" id="mark">Mark as read</button>
+  <div class="nav-btns"><a class="btn" id="prev" href="#">Previous</a><a class="btn primary" id="next" href="#">Next</a></div>
+</div>
+
+</div>
+</main>
+</div>
+</div>
+
+<script>
+(function(){
+  var KEY='github-guide-done-v1';
+  var done={};
+  try{done=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){done={}}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(done))}catch(e){}}
+
+  var arts=[].slice.call(document.querySelectorAll('article.ch'));
+  var content=document.getElementById('content');
+  var home=document.getElementById('home-view');
+  var actions=document.getElementById('ch-actions');
+  var toc=document.getElementById('toc');
+  var side=document.getElementById('side');
+  var menu=document.getElementById('menu');
+  var topTitle=document.getElementById('top-title');
+
+  var parts=[];var byPart={};
+  arts.forEach(function(a){
+    var p=a.dataset.part;
+    if(!byPart[p]){byPart[p]=[];parts.push(p)}
+    byPart[p].push(a);
+    var h=document.createElement('h2');h.className='ch-title';h.textContent=a.dataset.title;
+    var c=document.createElement('div');c.className='crumb';
+    a.insertBefore(h,a.firstChild);a.insertBefore(c,h);
+  });
+  arts.forEach(function(a,i){a.querySelector('.crumb').textContent=a.dataset.part+', chapter '+(byPart[a.dataset.part].indexOf(a)+1)+' of '+byPart[a.dataset.part].length});
+
+  function buildToc(filter){
+    toc.innerHTML='';var q=(filter||'').trim().toLowerCase();var any=false;
+    parts.forEach(function(p){
+      var list=byPart[p].filter(function(a){return !q||a.dataset.title.toLowerCase().indexOf(q)>-1||a.textContent.toLowerCase().indexOf(q)>-1});
+      if(!list.length)return;any=true;
+      var wrap=document.createElement('div');wrap.className='nav-part';
+      var h=document.createElement('h3');h.textContent=p;wrap.appendChild(h);
+      var ol=document.createElement('ol');
+      list.forEach(function(a){
+        var li=document.createElement('li');var l=document.createElement('a');
+        l.href='#'+a.id;l.dataset.id=a.id;if(done[a.id])l.className='done';
+        l.innerHTML='<span class="dot" aria-hidden="true"></span><span></span>';
+        l.lastChild.textContent=a.dataset.title;
+        li.appendChild(l);ol.appendChild(li);
+      });
+      wrap.appendChild(ol);toc.appendChild(wrap);
+    });
+    if(!any){toc.innerHTML='<p class="nav-empty">No chapters match. Try a shorter word.</p>'}
+    markCurrent();
+  }
+  function progress(){
+    var n=arts.filter(function(a){return done[a.id]}).length;
+    document.getElementById('prog-text').textContent=n+' of '+arts.length+' chapters read';
+    document.getElementById('prog-bar').style.width=(n/arts.length*100)+'%';
+  }
+  function buildParts(){
+    var el=document.getElementById('parts');el.innerHTML='';
+    parts.forEach(function(p){
+      var list=byPart[p];var n=list.filter(function(a){return done[a.id]}).length;
+      var a=document.createElement('a');a.className='part-card';a.href='#'+list[0].id;
+      a.innerHTML='<strong></strong><span></span>';
+      a.firstChild.textContent=p;a.lastChild.textContent=list.length+' chapters, '+n+' read';
+      el.appendChild(a);
+    });
+  }
+  var current=null;
+  function markCurrent(){
+    [].forEach.call(toc.querySelectorAll('a'),function(l){
+      if(current&&l.dataset.id===current.id)l.setAttribute('aria-current','page');else l.removeAttribute('aria-current');
+    });
+  }
+  function setMark(){
+    var b=document.getElementById('mark');
+    if(current&&done[current.id]){b.textContent='Read';b.classList.add('is-done')}
+    else{b.textContent='Mark as read';b.classList.remove('is-done')}
+  }
+  function route(){
+    var id=location.hash.slice(1);
+    var a=arts.filter(function(x){return x.id===id})[0];
+    arts.forEach(function(x){x.classList.remove('show')});
+    current=a||null;
+    if(!a){home.hidden=false;actions.hidden=true;topTitle.textContent='GitHub, explained';buildParts();document.title='GitHub, explained: a field guide'}
+    else{
+      home.hidden=true;a.classList.add('show');actions.hidden=false;
+      var i=arts.indexOf(a);
+      var prev=document.getElementById('prev'),next=document.getElementById('next');
+      if(i>0){prev.href='#'+arts[i-1].id;prev.style.visibility='visible'}else{prev.style.visibility='hidden'}
+      if(i<arts.length-1){next.href='#'+arts[i+1].id;next.textContent='Next';}else{next.href='#home';next.textContent='Back to start'}
+      topTitle.textContent=a.dataset.title;document.title=a.dataset.title+' | GitHub, explained';
+      setMark();
+    }
+    markCurrent();closeMenu();window.scrollTo(0,0);
+  }
+  document.getElementById('mark').addEventListener('click',function(){
+    if(!current)return;
+    if(done[current.id])delete done[current.id];else done[current.id]=1;
+    save();setMark();progress();
+    var l=toc.querySelector('a[data-id="'+current.id+'"]');if(l)l.classList.toggle('done',!!done[current.id]);
+  });
+  function closeMenu(){side.classList.remove('open');menu.setAttribute('aria-expanded','false');document.body.classList.remove('menu-open')}
+  menu.addEventListener('click',function(){var o=side.classList.toggle('open');menu.setAttribute('aria-expanded',o?'true':'false');document.body.classList.toggle('menu-open',o)});
+  document.getElementById('side-close').addEventListener('click',closeMenu);
+  side.addEventListener('click',function(e){var t=e.target;while(t&&t!==side){if(t.tagName==='A'){closeMenu();break}t=t.parentNode}});
+  document.addEventListener('click',function(e){if(side.classList.contains('open')&&!side.contains(e.target)&&e.target!==menu)closeMenu()});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeMenu()});
+  document.getElementById('search').addEventListener('input',function(e){buildToc(e.target.value)});
+  var gf=document.getElementById('gloss-filter');
+  gf.addEventListener('input',function(){
+    var q=gf.value.trim().toLowerCase();
+    [].forEach.call(document.querySelectorAll('#gloss dt'),function(dt){
+      var dd=dt.nextElementSibling;var hit=!q||(dt.textContent+' '+dd.textContent).toLowerCase().indexOf(q)>-1;
+      dt.hidden=!hit;dd.hidden=!hit;
+    });
+  });
+  window.addEventListener('hashchange',route);
+  buildToc('');progress();route();
+})();
+</script>
+</body>
+</html>
