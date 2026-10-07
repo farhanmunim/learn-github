@@ -1,8 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "learn-github",
-  "compatibility_date": "2026-10-01",
-  "assets": {
-    "directory": "./public"
-  }
+  "pages_build_output_dir": "./public",
+  "compatibility_date": "2026-10-01"
 }
