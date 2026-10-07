@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GitHub, explained: a field guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ffffff; --fg:#09090b; --muted:#71717a; --muted-bg:#f4f4f5; --border:#e4e4e7;
+  --card:#ffffff; --accent:#2563eb; --accent-bg:#eff6ff; --accent-fg:#1e40af;
+  --ok:#16a34a; --ok-bg:#f0fdf4; --warn-bg:#fffbeb; --warn-fg:#92400e;
+  --radius:0.5rem;
+  --sans:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#09090b; --fg:#fafafa; --muted:#a1a1aa; --muted-bg:#18181b; --border:#27272a;
+    --card:#0f0f12; --accent:#60a5fa; --accent-bg:#172554; --accent-fg:#bfdbfe;
+    --ok:#4ade80; --ok-bg:#052e16; --warn-bg:#2a1d05; --warn-fg:#fcd34d;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#09090b; --fg:#fafafa; --muted:#a1a1aa; --muted-bg:#18181b; --border:#27272a;
+  --card:#0f0f12; --accent:#60a5fa; --accent-bg:#172554; --accent-fg:#bfdbfe;
+  --ok:#4ade80; --ok-bg:#052e16; --warn-bg:#2a1d05; --warn-fg:#fcd34d;
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;min-height:100%}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+code{font-family:var(--mono);font-size:.875em;background:var(--muted-bg);border:1px solid var(--border);padding:.05em .35em;border-radius:.3rem}
+pre{font-family:var(--mono);font-size:13px;line-height:1.55;background:var(--muted-bg);border:1px solid var(--border);border-radius:var(--radius);padding:.9rem 1rem;overflow-x:auto;max-width:100%}
+pre code{background:none;border:0;padding:0;font-size:inherit}
+.tbl{overflow-x:auto;max-width:100%;border:1px solid var(--border);border-radius:var(--radius);margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:.55rem .75rem;border-bottom:1px solid var(--border);vertical-align:top}
+th{font-weight:500;color:var(--muted);background:var(--muted-bg)}
+tr:last-child td{border-bottom:0}
+
+.app{display:grid;grid-template-columns:300px minmax(0,1fr);min-height:100vh}
+.side{border-right:1px solid var(--border);position:sticky;top:0;height:100vh;overflow-y:auto;padding:1.25rem 1rem 2rem;background:var(--bg)}
+.brand{display:flex;align-items:center;gap:.6rem;font-weight:600;letter-spacing:-.01em;text-decoration:none;color:var(--fg);margin-bottom:1rem}
+.brand-mark{width:28px;height:28px;border-radius:.4rem;background:var(--fg);color:var(--bg);display:grid;place-items:center;font-family:var(--mono);font-size:13px}
+.search{width:100%;height:36px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--fg);padding:0 .75rem;font:inherit;font-size:14px}
+.progress{margin:1rem 0 .5rem;font-size:13px;color:var(--muted)}
+.bar{height:6px;background:var(--muted-bg);border-radius:99px;overflow:hidden;margin-top:.35rem}
+.bar>span{display:block;height:100%;background:var(--fg);width:0;transition:width .3s}
+.nav-part{margin-top:1.1rem}
+.nav-part>h3{font-size:12px;font-weight:500;color:var(--muted);margin:0 0 .3rem .5rem;letter-spacing:.01em}
+.nav-part ol{list-style:none;margin:0;padding:0}
+.nav-part a{display:flex;gap:.5rem;align-items:baseline;padding:.3rem .5rem;border-radius:.4rem;text-decoration:none;color:var(--fg);font-size:14px;line-height:1.35}
+.nav-part a:hover{background:var(--muted-bg)}
+.nav-part a[aria-current="page"]{background:var(--muted-bg);font-weight:500}
+.nav-part a .dot{flex:none;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--border);transform:translateY(-1px)}
+.nav-part a.done .dot{background:var(--ok);border-color:var(--ok)}
+.nav-empty{font-size:14px;color:var(--muted);padding:.5rem}
+.btn.side-close{display:none}
+body.menu-open{overflow:hidden}
+
+.top{display:none;position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--border);padding:.6rem 1rem;padding-top:calc(.6rem + env(safe-area-inset-top,0px));align-items:center;gap:.75rem;margin-top:calc(-1 * env(safe-area-inset-top,0px))}
+.btn{height:36px;padding:0 .9rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--fg);font:inherit;font-size:14px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem}
+.btn:hover{background:var(--muted-bg)}
+.btn.primary{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.btn.primary:hover{opacity:.9}
+.btn.is-done{background:var(--ok-bg);color:var(--ok);border-color:var(--ok)}
+
+main{padding:2.5rem clamp(1rem,5vw,4rem) 4rem;min-width:0}
+.content{max-width:44rem}
+.crumb{font-size:13px;color:var(--muted);margin-bottom:.4rem}
+h1{font-size:clamp(2rem,5vw,2.9rem);line-height:1.08;letter-spacing:-.035em;font-weight:600;margin:0 0 1rem}
+h2.ch-title{font-size:clamp(1.6rem,4vw,2.1rem);line-height:1.15;letter-spacing:-.025em;font-weight:600;margin:0 0 .75rem}
+h4{font-size:14px;font-weight:600;margin:0 0 .35rem}
+.lead{font-size:1.125rem;color:var(--muted);margin:0 0 1.5rem;line-height:1.55}
+article.ch{display:none}
+article.ch.show{display:block}
+article.ch ul{padding-left:1.2rem}
+article.ch li{margin:.25rem 0}
+aside{border:1px solid var(--border);border-radius:var(--radius);padding:.9rem 1rem;margin:1.25rem 0}
+aside p{margin:0}
+aside p+p{margin-top:.5rem}
+aside.yours{background:var(--accent-bg);border-color:transparent;color:var(--accent-fg)}
+aside.yours code{background:transparent;border-color:currentColor}
+aside.say{background:var(--muted-bg);border-color:transparent}
+aside.say p{font-style:italic}
+aside.warn{background:var(--warn-bg);border-color:transparent;color:var(--warn-fg)}
+.ch-actions{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:space-between;align-items:center;margin-top:2.5rem;padding-top:1.25rem;border-top:1px solid var(--border)}
+.ch-actions .nav-btns{display:flex;gap:.5rem}
+
+.journey{list-style:none;padding:0;margin:1.75rem 0 2rem;display:grid;gap:0}
+.journey li{display:grid;grid-template-columns:2.25rem minmax(0,1fr);gap:.9rem;position:relative;padding-bottom:1rem}
+.journey li::before{content:"";position:absolute;left:1.1rem;top:2.25rem;bottom:0;width:1px;background:var(--border)}
+.journey li:last-child::before{display:none}
+.journey .n{width:2.25rem;height:2.25rem;border-radius:50%;border:1px solid var(--border);display:grid;place-items:center;font-family:var(--mono);font-size:13px;background:var(--bg);position:relative}
+.journey b{font-weight:600}
+.journey a{font-size:14px}
+.journey p{margin:.1rem 0 0;color:var(--muted);font-size:15px}
+.parts{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:.75rem;margin:1.25rem 0}
+.part-card{border:1px solid var(--border);border-radius:calc(var(--radius) + .25rem);padding:1rem;text-decoration:none;color:var(--fg);display:block}
+.part-card:hover{background:var(--muted-bg)}
+.part-card strong{display:block;font-weight:600}
+.part-card span{font-size:13px;color:var(--muted)}
+.gloss-filter{margin:.5rem 0 1rem}
+dl.gloss{margin:0}
+dl.gloss dt{font-weight:600;margin-top:.9rem}
+dl.gloss dd{margin:.1rem 0 0;color:var(--muted)}
+
+@media (max-width:860px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .top{display:flex}
+  .side{position:fixed;inset:0 auto 0 0;width:min(86vw,320px);z-index:10;transform:translateX(-100%);transition:transform .2s;height:100%;height:100dvh;padding-top:calc(1.25rem + env(safe-area-inset-top,0px));padding-bottom:calc(2rem + env(safe-area-inset-bottom,0px));box-shadow:none}
+  .side.open{transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.4)}
+  .btn.side-close{display:inline-flex;position:absolute;top:calc(1rem + env(safe-area-inset-top,0px));right:.75rem;width:36px;padding:0;justify-content:center;font-size:18px;line-height:1}
+  main{padding-top:1.5rem}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<style>
+.fig{margin:1.25rem 0;padding:1rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--card)}
+.fig svg{display:block;width:100%;max-width:560px;height:auto;margin:0 auto}
+.fig figcaption{margin-top:.6rem;font-size:13px;color:var(--muted);text-align:center}
+.fig .box{fill:var(--muted-bg);stroke:var(--border)}
+.fig .box-accent{fill:var(--accent-bg);stroke:var(--accent)}
+.fig text{fill:var(--fg);font-family:var(--sans);font-size:12px}
+.fig .t-muted{fill:var(--muted);font-size:11px}
+.fig .t-accent{fill:var(--accent-fg);font-weight:600}
+.fig .t-head{font-weight:600}
+.fig .arrow{stroke:var(--muted);fill:none;stroke-width:1.5}
+</style>
+</head>
+<body>
+<div class="app">
+<nav class="side" id="side" aria-label="Chapters">
+  <button class="btn side-close" id="side-close" aria-label="Close chapters menu">&times;</button>
+  <a class="brand" href="#home"><span class="brand-mark">gh</span>GitHub, explained</a>
+  <input class="search" id="search" type="search" placeholder="Search chapters, e.g. rebase" aria-label="Search chapters">
+  <div class="progress"><span id="prog-text">0 of 0 chapters read</span><div class="bar"><span id="prog-bar"></span></div></div>
+  <div id="toc"></div>
+</nav>
+<div>
+<header class="top">
+  <button class="btn" id="menu" aria-controls="side" aria-expanded="false">Chapters</button>
+  <span id="top-title" style="font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+</header>
+<main id="main">
+<div class="content" id="content">
+
+<section id="home-view">
+  <h1>GitHub, explained for people who build things</h1>
+  <p class="lead">More than forty short chapters that teach you how to use Git and GitHub properly, whether you work alone, with a team, or with an AI assistant writing half the code. Each one takes two or three minutes and most end with a line you can say out loud.</p>
+  <p>Start with the journey below. It is the loop almost every change goes through, from an idea on your laptop to code that is live. Once you can narrate this loop, you can follow most conversations about how a team works in GitHub.</p>
+  <ol class="journey">
+    <li><span class="n">1</span><div><b>You start with a repository</b><p>A folder whose whole history is tracked, with a copy on GitHub.</p><a href="#git-vs-github">Git versus GitHub</a></div></li>
+    <li><span class="n">2</span><div><b>You branch off</b><p>A safe side-copy where you can experiment without touching the working version.</p><a href="#branches">Branches</a></div></li>
+    <li><span class="n">3</span><div><b>You save your work in commits</b><p>Small, labelled snapshots you can always go back to.</p><a href="#commits">Making good commits</a></div></li>
+    <li><span class="n">4</span><div><b>You push to GitHub</b><p>Your branch is uploaded so others (and backups) can see it.</p><a href="#remotes">Remotes, push and pull</a></div></li>
+    <li><span class="n">5</span><div><b>You open a pull request</b><p>A proposal: "please merge my branch into main".</p><a href="#prs">Pull requests</a></div></li>
+    <li><span class="n">6</span><div><b>Checks run and people review</b><p>Automated tests and human eyes catch problems before they land.</p><a href="#actions">GitHub Actions</a></div></li>
+    <li><span class="n">7</span><div><b>You merge and ship</b><p>The change joins main and can be released or deployed.</p><a href="#releases">Tags and releases</a></div></li>
+  </ol>
+  <h2 class="ch-title" style="font-size:1.4rem">The parts</h2>
+  <div class="parts" id="parts"></div>
+  <p style="color:var(--muted);font-size:14px">Your progress is saved in this browser. Mark a chapter as read at the bottom of each page.</p>
+</section>
+
+<!-- PART 1 -->
+<article class="ch" id="git-vs-github" data-part="Start here" data-title="Git versus GitHub">
+<p class="lead">Git is the tool that tracks your code's history. GitHub is a website that hosts Git projects and adds teamwork on top.</p>
+<p><b>Git</b> is free software that runs on your computer. It remembers every version of every file in a project, so you can see what changed, when, and why, and go back if something breaks. It works completely offline and has nothing to do with any website.</p>
+<p><b>GitHub</b> is a company's website (owned by Microsoft) that stores copies of Git projects online. On top of the storage it adds things Git doesn't have: accounts, a web page for each project, <b>issues</b> (a to-do and bug list), <b>pull requests</b> (a way to propose and review changes), automation, and permission controls. Similar services exist: GitLab, Bitbucket, Codeberg. They all speak Git; the extras differ.</p>
+<p>Two benefits make it worth learning even if you work alone: <b>history</b> (an undo button for your whole project, not just one file) and <b>backup</b> (your laptop can die and your work is still on GitHub). With a team, you also get a shared place where everyone's work meets without overwriting each other.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 150" role="img" aria-label="Diagram: Git runs on your laptop and tracks history; GitHub is a website that holds a shared copy and adds teamwork features">
+<defs><marker id="arrG1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+<rect class="box" x="20" y="35" width="190" height="80" rx="8"/>
+<text x="115" y="63" text-anchor="middle">Git</text>
+<text x="115" y="81" text-anchor="middle" class="t-muted">software on your computer</text>
+<text x="115" y="97" text-anchor="middle" class="t-muted">tracks history</text>
+<rect class="box-accent" x="350" y="35" width="190" height="80" rx="8"/>
+<text x="445" y="63" text-anchor="middle">GitHub</text>
+<text x="445" y="81" text-anchor="middle" class="t-muted">website that hosts a copy</text>
+<text x="445" y="97" text-anchor="middle" class="t-muted">issues, reviews, automation</text>
+<line class="arrow" x1="215" y1="65" x2="343" y2="65" marker-end="url(#arrG1)"/>
+<line class="arrow" x1="343" y1="90" x2="215" y2="90" marker-end="url(#arrG1)"/>
+<text x="279" y="55" text-anchor="middle" class="t-accent">push</text>
+<text x="279" y="108" text-anchor="middle" class="t-accent">pull</text>
+</svg>
+<figcaption>Git does the tracking on your machine; GitHub keeps a shared copy and the teamwork tools.</figcaption>
+</figure>
+<aside class="yours"><h4>In your project</h4><p>If you've ever kept files called <code>final</code>, <code>final-v2</code> and <code>final-REALLY</code>, Git replaces all of that with one folder and a searchable history.</p></aside>
+<aside class="say"><h4>Say it like this</h4><p>"Git is the tool, GitHub is where we host it. I can commit offline and push when I'm back online."</p></aside>
+</article>
+
+<article class="ch" id="nouns" data-part="Start here" data-title="Repo, commit, branch, remote">
+<p class="lead">Four nouns you'll hear in almost every Git sentence.</p>
+<p>A <b>repository</b> (or <b>repo</b>) is a project folder plus its full history. Git keeps the history in a hidden folder called <code>.git</code>. Delete that folder and the project becomes ordinary files again, so never touch it by hand.</p>
+<p>A <b>commit</b> is a saved snapshot of your project at one moment, with a message saying what changed, an author and a timestamp. Each commit has an ID, a long string of letters and digits called a <b>hash</b> (for example <code>a1b2c3d</code> when shortened). Commits form a chain, each pointing at the one before it. That chain is the history.</p>
+<p>A <b>branch</b> is a movable label pointing at a commit, in effect a separate line of work. The main line is usually called <code>main</code>. You create other branches for features and fixes, then bring them back in.</p>
+<p>A <b>remote</b> is another copy of the repo somewhere else, usually on GitHub. By convention the main remote is named <code>origin</code>. Your own copy is the <b>local</b> repo; GitHub's copy is the remote.</p>
+<p>Two more you'll see straight away: <b>clone</b> means downloading a full copy of a repo, and <b>HEAD</b> means "the commit you're currently looking at", which is normally the tip of the branch you're on.</p>
+<aside class="say"><h4>Say it like this</h4><p>"I cloned the repo, made a branch, committed twice and pushed it to origin."</p></aside>
+</article>
+
+<article class="ch" id="setup" data-part="Start here" data-title="Accounts, security and first-time setup">
+<p class="lead">Twenty minutes of setup now saves you from lockouts and embarrassing commits later.</p>
+<p><b>1. Create your account and turn on two-factor authentication.</b> Your GitHub account can publish code that other people run, so it's a target. Enable 2FA in Settings, then Password and authentication. A <b>passkey</b> (a login stored on your phone or laptop that replaces the password) or an authenticator app is better than text messages. Save the recovery codes somewhere safe, such as a password manager.</p>
+<p><b>2. Install Git</b> and tell it who you are. Every commit carries a name and email:</p>
+<pre><code>git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+git config --global init.defaultBranch main</code></pre>
+<p>If you don't want your real email in public commits, GitHub gives you a private one under Settings, then Emails ("Keep my email addresses private"). It looks like <code>12345+username@users.noreply.github.com</code>; use that as <code>user.email</code>.</p>
+<p><b>3. Choose how your computer proves who it is to GitHub.</b> GitHub no longer accepts your account password for Git commands. Pick one:</p>
+<ul>
+<li><b>GitHub CLI</b> (<code>gh auth login</code>): the easiest path. It signs you in via the browser and sets up HTTPS credentials for you.</li>
+<li><b>HTTPS with a credential manager</b>: Git for Windows and macOS bundle one that opens a browser sign-in the first time.</li>
+<li><b>SSH key</b>: you generate a key pair with <code>ssh-keygen -t ed25519</code>, add the public half (<code>.pub</code> file) to Settings, then SSH and GPG keys, and never type a credential again. The private half never leaves your machine.</li>
+</ul>
+<p>A <b>personal access token</b> (PAT) is a long password-like string with limited powers, used by scripts and tools. Treat it like a password: never paste it into code, chats or screenshots.</p>
+<aside class="warn"><h4>Careful</h4><p>"Anything that can push to your account can change your code." Don't store tokens in a file inside a repo, and don't share your screen with a terminal showing one.</p></aside>
+<aside class="say"><h4>Say it like this</h4><p>"I've got 2FA and an SSH key set up, and my commits use the noreply address so my email isn't public."</p></aside>
+</article>
+
+<!-- PART 2 -->
+<article class="ch" id="first-repo" data-part="Git on your machine" data-title="Your first repository">
+<p class="lead">There are two ways to start: create a repo from scratch, or clone one that already exists.</p>
+<p><b>Starting from scratch.</b> Go into your project folder and turn it into a repo:</p>
+<pre><code>cd my-project
+git init
+git add .
+git commit -m "Initial commit"</code></pre>
+<p>That's a repo with one commit. To put it on GitHub, create an empty repository on the website (no README, so nothing conflicts), then connect and upload:</p>
+<pre><code>git remote add origin git@github.com:you/my-project.git
+git push -u origin main</code></pre>
+<p>The <code>-u</code> remembers that your local <code>main</code> goes with <code>origin/main</code>, so later a bare <code>git push</code> or <code>git pull</code> just works. With the GitHub CLI, <code>gh repo create</code> does all of this in one step.</p>
+<p><b>Starting from an existing repo.</b> Use <b>clone</b>. It downloads everything, history included, and sets up <code>origin</code> for you:</p>
+<pre><code>git clone git@github.com:someone/their-project.git</code></pre>
+<p>On the repo's page, the green <b>Code</b> button shows the address to copy. HTTPS addresses start with <code>https://</code>, SSH ones with <code>git@github.com:</code>. Use whichever matches your setup.</p>
+<aside class="yours"><h4>In your project</h4><p>Create the repo on GitHub on day one, even for a weekend experiment. It's free, private repos are fine, and it means your first working version is already backed up.</p></aside>
+<aside class="say"><h4>Say it like this</h4><p>"Just clone it and run the install, the README says what to do."</p></aside>
+</article>
+
+<article class="ch" id="areas" data-part="Git on your machine" data-title="Working tree, staging area and commits">
+<p class="lead">Git has a waiting room between your edits and your history, and understanding it clears up most early confusion.</p>
+<p>Your files live in three states, and a change moves through them in order:</p>
+<ul>
+<li>The <b>working tree</b> (or working directory) is the actual files you edit. Changes here are not yet recorded anywhere.</li>
+<li>The <b>staging area</b> (or <b>index</b>) is a list of the changes you've chosen to include in the next commit. <code>git add</code> puts changes there.</li>
+<li>The <b>repository</b> holds committed snapshots. <code>git commit</code> turns whatever is staged into a permanent commit.</li>
+</ul>
+<p>Why the middle step? So one commit can hold exactly one idea. You might have edited five files while fixing a bug and tidying a heading; staging lets you commit the bug fix first and the tidy-up separately.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 140" role="img" aria-label="Diagram: files move from working tree to staging area with git add, to local repository with git commit, then to GitHub with git push">
+<defs><marker id="arrG2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+<rect class="box" x="10" y="45" width="100" height="56" rx="8"/>
+<text x="60" y="70" text-anchor="middle">Working tree</text>
+<text x="60" y="87" text-anchor="middle" class="t-muted">your edits</text>
+<rect class="box" x="155" y="45" width="100" height="56" rx="8"/>
+<text x="205" y="70" text-anchor="middle">Staging area</text>
+<text x="205" y="87" text-anchor="middle" class="t-muted">next commit</text>
+<rect class="box" x="300" y="45" width="100" height="56" rx="8"/>
+<text x="350" y="70" text-anchor="middle">Local repo</text>
+<text x="350" y="87" text-anchor="middle" class="t-muted">history</text>
+<rect class="box-accent" x="445" y="45" width="100" height="56" rx="8"/>
+<text x="495" y="70" text-anchor="middle">GitHub</text>
+<text x="495" y="87" text-anchor="middle" class="t-muted">shared copy</text>
+<line class="arrow" x1="113" y1="73" x2="150" y2="73" marker-end="url(#arrG2)"/>
+<line class="arrow" x1="258" y1="73" x2="295" y2="73" marker-end="url(#arrG2)"/>
+<line class="arrow" x1="403" y1="73" x2="440" y2="73" marker-end="url(#arrG2)"/>
+<text x="132" y="38" text-anchor="middle" class="t-accent">git add</text>
+<text x="277" y="38" text-anchor="middle" class="t-accent">git commit</text>
+<text x="422" y="38" text-anchor="middle" class="t-accent">git push</text>
+</svg>
+<figcaption>A change travels left to right. Only the last arrow involves the internet.</figcaption>
+</figure>
+<p>Useful variants: <code>git add -p</code> lets you pick individual chunks within a file, and <code>git commit -a</code> skips staging for files Git already tracks (it won't pick up brand-new files).</p>
+<aside class="say"><h4>Say it like this</h4><p>"Stage the fix on its own, I don't want the formatting changes in the same commit."</p></aside>
+</article>
+
+<article class="ch" id="commits" data-part="Git on your machine" data-title="Making good commits">
+<p class="lead">A good commit is small, does one thing, and has a message your future self can understand.</p>
+<p><b>Commit often.</b> A commit is a save point, and cheap. Small commits are easy to review, easy to undo and easy to find bugs in. A commit called "stuff" that changes forty files is none of those.</p>
+<p><b>One idea per commit.</b> People call this an <b>atomic</b> commit. If you can't describe it without the word "and", it's probably two commits.</p>
+<p><b>Write the message for a stranger.</b> The convention is a short summary line (about 50 characters, in the imperative: "Fix login redirect", not "Fixed" or "Fixes"), then, if needed, a blank line and a longer explanation of <em>why</em>. The diff already shows <em>what</em> changed; the message should say why.</p>
+<pre><code>git commit -m "Fix redirect loop after login" -m "The session cookie was set after the redirect, so the next request looked logged out."</code></pre>
+<p>Many teams use <b>Conventional Commits</b>, a light naming scheme that starts the summary with a type, such as <code>feat:</code>, <code>fix:</code>, <code>docs:</code> or <code>chore:</code>. It makes history scannable and lets tools generate changelogs. Whether you adopt it matters less than being consistent.</p>
+<ul>
+<li><b>Don't commit broken code</b> to a shared branch if you can help it. Test first.</li>
+<li><b>Don't mix formatting with logic.</b> Reformatting a file in the same commit as a bug fix hides the fix.</li>
+<li><b>Fix the last commit</b> with <code>git commit --amend</code>, but only if you haven't pushed it yet.</li>
+</ul>
+<aside class="yours"><h4>In your project</h4><p>Commit every time something works, even tiny. When an AI tool or a late-night edit breaks things, you'll be one command away from the last good state.</p></aside>
+<aside class="say"><h4>Say it like this</h4><p>"Can you split that into two commits? The refactor and the bug fix are tangled together."</p></aside>
+</article>
+
+<article class="ch" id="looking" data-part="Git on your machine" data-title="Looking around: status, diff and log">
+<p class="lead">Three read-only commands tell you where you are before you change anything.</p>
+<pre><code>git status        # what's changed, what's staged, which branch am I on
+git diff          # exact line changes not yet staged
+git diff --staged # exact line changes that are staged
+git log --oneline --graph --decorate -15</code></pre>
+<p><code>git status</code> is the one to run constantly. It also tells you what to do next ("Changes not staged for commit", "Your branch is ahead of 'origin/main' by 2 commits").</p>
+<p>A <b>diff</b> shows changes line by line: lines starting with <code>-</code> were removed and lines starting with <code>+</code> were added. Reading your own diff before every commit is the single best habit for catching leftovers like debug prints, stray files and secrets.</p>
+<p><code>git log</code> lists commits, newest first. The options above squash it to one line each and draw the branch shape. Add <code>-p</code> to see each commit's changes, or a filename (<code>git log -- path/to/file</code>) to see one file's history.</p>
+<p>Two forensic tools worth knowing: <code>git blame file</code> shows who last changed each line (and the commit to ask about it), and <code>git show a1b2c3d</code> shows one commit in full. On GitHub, the <b>History</b> and <b>Blame</b> buttons on a file do the same thing.</p>
+<aside class="say"><h4>Say it like this</h4><p>"Run git status and git diff first, I want to see what's actually changed before we commit."</p></aside>
+</article>
+
+<article class="ch" id="undo" data-part="Git on your machine" data-title="Undoing things safely">
+<p class="lead">Nearly everything in Git can be undone, as long as you know which undo matches which situation.</p>
+<div class="tbl"><table>
+<tr><th>Situation</th><th>Command</th></tr>
+<tr><td>Throw away edits to a file (not yet staged)</td><td><code>git restore file</code></td></tr>
+<tr><td>Unstage a file but keep the edits</td><td><code>git restore --staged file</code></td></tr>
+<tr><td>Fix the last commit's message or contents (not pushed yet)</td><td><code>git commit --amend</code></td></tr>
+<tr><td>Undo a commit that's already shared, safely</td><td><code>git revert a1b2c3d</code></td></tr>
+<tr><td>Move a local branch back, keeping the changes</td><td><code>git reset --soft HEAD~1</code></td></tr>
+<tr><td>Move a local branch back and discard the changes</td><td><code>git reset --hard a1b2c3d</code></td></tr>
+<tr><td>Find a commit you think you lost</td><td><code>git reflog</code></td></tr>
+</table></div>
+<p>The key distinction is <b>revert versus reset</b>. <code>git revert</code> adds a <em>new</em> commit that cancels an earlier one, so history is preserved and it's safe on shared branches. <code>git reset</code> <em>moves the branch pointer</em> and (with <code>--hard</code>) throws work away; use it only on commits nobody else has.</p>
+<p>The safety net is the <b>reflog</b>, a private log of everywhere your <code>HEAD</code> has been. If you reset too far, <code>git reflog</code> shows the commit you were on a minute ago, and <code>git reset --hard HEAD@{1}</code> returns to it. Commits you've made are very hard to lose; edits you never committed are not recoverable, which is another reason to commit often.</p>
+<aside class="warn"><h4>Careful</h4><p><code>git restore file</code> and <code>git reset --hard</code> permanently delete uncommitted work. Run <code>git status</code> and make sure you mean it.</p></aside>
+<aside class="say"><h4>Say it like this</h4><p>"Don't reset main, it's already pushed. Revert the commit and we'll keep the history honest."</p></aside>
+</article>
+
+<article class="ch" id="gitignore" data-part="Git on your machine" data-title=".gitignore and files that don't belong">
+<p class="lead">Some files should never be in a repo: secrets, dependencies, build output and your editor's clutter.</p>
+<p>A file called <code>.gitignore</code> in your repo root lists patterns Git should pretend don't exist. Typical entries:</p>
+<pre><code># dependencies and build output
+node_modules/
+dist/
+.next/
+
+# secrets and local config
+.env
+.env.*
+!.env.example
+
+# operating system and editor noise
+.DS_Store
+.vscode/</code></pre>
+<p>Why these? <b>Dependencies</b> (<code>node_modules</code>) are huge and can be recreated from <code>package.json</code>. <b>Build output</b> can be regenerated. <b>Secrets</b> such as API keys must never be in a repo (see the next chapter). The <code>!.env.example</code> line is an exception: a template file with fake values, so teammates know which settings are needed.</p>
+<p>GitHub can create a <code>.gitignore</code> for your language when you make a repo, and the <code>github/gitignore</code> project on GitHub holds templates for everything.</p>
+<aside class="warn"><h4>Careful</h4><p><code>.gitignore</code> only affects files Git isn't tracking yet. If you committed <code>.env</code> before adding it, run <code>git rm --cached .env</code> and commit. And the secret is still in your history; see the next chapter.</p></aside>
+<aside class="say"><h4>Say it like this</h4><p>"Add dist and .env to the gitignore, and commit an .env.example so people know what to set."</p></aside>
+</article>
+
+<article class="ch" id="secrets-leak" data-part="Git on your machine" data-title="When you commit a secret">
+<p class="lead">If a password or API key lands in a commit, assume it's compromised and rotate it, don't just delete it.</p>
+<p>A <b>secret</b> is any credential: API keys, database passwords, tokens, private keys. Bots scan public GitHub constantly and can find a leaked key within minutes, so speed matters.</p>
+<p>Why deleting the file isn't enough: Git remembers. The secret stays in older commits, in forks, in clones and in any cached views. Removing it from the latest version only hides it from casual view.</p>
+<ol>
+<li><b>Revoke or rotate the secret first.</b> Generate a new key in the provider's dashboard and disable the old one. This is the step that actually fixes the problem.</li>
+<li><b>Put the new one somewhere safe</b>: an <code>.env</code> file that's gitignored, or your host's secret settings.</li>
+<li><b>Optionally clean the history</b> with a tool such as <code>git filter-repo</code>, then force-push. This is tidying, not protection, and it's awkward on shared repos.</li>
+</ol>
+<p>Prevention beats cleanup. GitHub's <b>secret scanning</b> looks for known key formats and alerts you, and <b>push protection</b> blocks a push containing one (it's on by default for public repos and can be switched on for private ones). Many tools you'll meet say "never commit <code>.env</code>"; this is why.</p>
+<aside class="yours"><h4>In your project</h4><p>Anything the browser can see is public. If an API key ends up in front-end code, it's leaked no matter what your repo says, so keep keys on a server or in a function.</p></aside>
+<aside class="say"><h4>Say it like this</h4><p>"We pushed a key to a public repo. Rotate it first, then we'll worry about scrubbing history."</p></aside>
+</article>
+
+<!-- PART 3 -->
+<article class="ch" id="branches" data-part="Branches and remotes" data-title="Branches">
+<p class="lead">A branch is a safe side-road: work there can't break main until you choose to merge it.</p>
+<p>Under the hood a branch is just a label pointing at a commit, which is why creating one is instant and costs nothing. Make one for every feature, fix or experiment.</p>
+<pre><code>git switch -c feature/login   # create and move to a new branch
+git switch main               # go back
+git branch                    # list local branches
+git branch -d feature/login   # delete a merged branch</code></pre>
+<p>(You'll also see <code>git checkout</code> in older guides. It does the same jobs but mixes several unrelated things; <code>switch</code> and <code>restore</code> are the clearer modern commands.)</p>
+<p>When you switch branches, Git rewrites the files in your folder to match that branch. Commit or stash your changes first, otherwise Git may refuse or carry them across.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 170" role="img" aria-label="Diagram: a feature branch splits off main after commit B, gets two commits, and is merged back into main as a merge commit">
+<defs><marker id="arrG3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+<text x="20" y="38" class="t-head">main</text>
+<text x="20" y="128" class="t-head">feature</text>
+<line class="arrow" x1="88" y1="50" x2="132" y2="50" marker-end="url(#arrG3)"/>
+<line class="arrow" x1="178" y1="50" x2="302" y2="50" marker-end="url(#arrG3)"/>
+<line class="arrow" x1="348" y1="50" x2="432" y2="50" marker-end="url(#arrG3)"/>
+<line class="arrow" x1="170" y1="62" x2="220" y2="118" marker-end="url(#arrG3)"/>
+<line class="arrow" x1="268" y1="125" x2="302" y2="125" marker-end="url(#arrG3)"/>
+<line class="arrow" x1="348" y1="118" x2="418" y2="64" marker-end="url(#arrG3)"/>
+<circle cx="70" cy="50" r="17" class="box"/><text x="70" y="54" text-anchor="middle">A</text>
+<circle cx="155" cy="50" r="17" class="box"/><text x="155" y="54" text-anchor="middle">B</text>
+<circle cx="325" cy="50" r="17" class="box"/><text x="325" y="54" text-anchor="middle">C</text>
+<circle cx="450" cy="50" r="17" class="box-accent"/><text x="450" y="54" text-anchor="middle">M</text>
+<circle cx="245" cy="125" r="17" class="box"/><text x="245" y="129" text-anchor="middle">D</text>
+<circle cx="325" cy="125" r="17" class="box"/><text x="325" y="129" text-anchor="middle">E</text>
+<text x="450" y="90" text-anchor="middle" class="t-muted">merge commit</text>
+</svg>
+<figcaption>The feature branch splits off at B. Meanwhile main moved on (C). The merge commit M joins both lines of work.</figcaption>
+</figure>
+<aside class="yours"><h4>In your project</h4><p>Even solo, branch before any risky change, such as a big redesign or letting an AI tool loose. If it goes badly, you delete the branch and main is untouched.</p></aside>
+<aside class="say"><h4>Say it like this</h4><p>"Branch off main, do it on there, and we'll open a PR when it's ready."</p></aside>
+</article>
+
+<article class="ch" id="remotes" data-part="Branches and remotes" data-title="Remotes: push, pull and fetch">
+<p class="lead">Your local repo and GitHub only talk when you tell them to, and three commands cover almost all of it.</p>
+<ul>
+<li><b>push</b> uploads your local commits to a remote branch: <code>git push</code>.</li>
+<li><b>fetch</b> downloads new commits from the remote but doesn't change your files: <code>git fetch</code>. It's always safe.</li>
+<li><b>pull</b> is <code>fetch</code> followed by merging the new commits into your current branch: <code>git pull</code>.</li>
+</ul>
+<p>The first push of a new branch needs to say where it goes: <code>git push -u origin feature/login</code>. After that, plain <code>git push</code> is enough.</p>
+<p>Git keeps a local bookmark of where each remote branch was the last time you looked, named <code>origin/main</code>, <code>origin/feature/login</code> and so on. These are called <b>remote-tracking branches</b>. <code>git status</code> uses them to say "ahead by 2" or "behind by 1".</p>
+<p>If a push is <b>rejected</b> ("non-fast-forward", "fetch first"), it means the remote has commits you don't. Pull, resolve anything needed, push again. Don't reach for <code>--force</code> (more on that in the errors chapter).</p>
+<p>Build the habit: <b>pull before you start work, push when you finish a chunk</b>. Unpushed commits exist only on your laptop.</p>
+<aside class="say"><h4>Say it like this</h4><p>"Fetch first and see what's changed upstream, then rebase onto it before you push."</p></aside>
+</article>
+
+<article class="ch" id="merge-rebase" data-part="Branches and remotes" data-title="Merge versus rebase">
+<p class="lead">Both bring one branch's work into another; they differ in how the history looks afterwards.</p>
+<p><b>Merge</b> ties two branches together with a new <b>merge commit</b>. Nothing is rewritten; the history shows exactly what happened, including that the work happened in parallel.</p>
+<pre><code>git switch main
+git merge feature/login</code></pre>
+<p>If main hasn't moved since you branched, Git just slides the pointer forward, called a <b>fast-forward</b>, and no merge commit is needed.</p>
+<p><b>Rebase</b> takes your branch's commits and replays them on top of the latest main, as if you'd started from there. The result is a straight line with no merge commit, but your commits get <em>new IDs</em>, because they now have different parents.</p>
+<pre><code>git switch feature/login
+git rebase main</code></pre>
+<p>The golden rule: <b>never rebase commits other people already have</b>. Rewriting shared history forces everyone else to untangle their copies. Rebase your own unpushed or private branch freely; leave shared branches alone.</p>
+<div class="tbl"><table>
+<tr><th></th><th>Merge</th><th>Rebase</th></tr>
+<tr><td>History</td><td>Preserved, with merge commits</td><td>Linear, tidy</td></tr>
+<tr><td>Rewrites commits?</td><td>No</td><td>Yes</td></tr>
+<tr><td>Safe on shared branches?</td><td>Yes</td><td>No</td></tr>
+<tr><td>Good for</td><td>Combining finished work</td><td>Updating your own branch with the latest main</td></tr>
+</table></div>
+<aside class="yours"><h4>In your project</h4><p>If you're unsure, merge. A slightly messy history is harmless; a botched rebase can cost you an afternoon.</p></aside>
+<aside class="say"><h4>Say it like this</h4><p>"I'll rebase my branch onto main to pick up the latest, but I won't touch it once the PR is under review."</p></aside>
+</article>
+
+<article class="ch" id="conflicts" data-part="Branches and remotes" data-title="Merge conflicts">
+<p class="lead">A conflict just means two people changed the same lines and Git needs a human to choose.</p>
+<p>Git merges automatically when changes touch different parts of a file. When both sides edited the same lines, it stops and marks the file:</p>
+<pre><code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+const title = "Welcome back";
+=======
+const title = "Hello again";
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature/greeting</code></pre>
+<p>Everything between <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code> and <code>=======</code> is your side (the branch you're on), and the part up to <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code> is theirs. To resolve it:</p>
+<ol>
+<li>Open the file and decide: keep yours, keep theirs, or combine them.</li>
+<li><b>Delete all the marker lines</b> (<code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>, <code>=======</code>, <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>) so only real code remains.</li>
+<li>Run the app or tests to check it still works.</li>
+<li><code>git add file</code>, then <code>git commit</code> (or <code>git rebase --continue</code> if you were rebasing).</li>
+</ol>
+<p>Stuck? <code>git merge --abort</code> (or <code>git rebase --abort</code>) puts everything back as it was. VS Code and GitHub's web editor both show conflicts with clickable "Accept current / incoming" buttons, which are friendlier than editing raw markers.</p>
+<p>You'll hit fewer conflicts if branches are short-lived, PRs are small and you pull main into your branch regularly.</p>
+<aside class="say"><h4>Say it like this</h4><p>"There's a conflict in the config file. Keep both settings, I'll resolve it and push."</p></aside>
+</article>
+
+<article class="ch" id="stash" data-part="Branches and remotes" data-title="Stash, tags and other small tools">
+<p class="lead">Three little commands that rescue you from awkward moments.</p>
+<p><b>Stash</b> shelves your uncommitted changes so you can do something else. Typical use: you're mid-edit and need to switch branches.</p>
+<pre><code>git stash          # put changes aside, working tree is clean again
+git switch other-branch
+# ...do the other thing, come back...
+git stash pop      # bring the changes back</code></pre>
+<p>A <b>tag</b> is a permanent label on one commit, usually marking a release such as <code>v1.2.0</code>. Unlike a branch it doesn't move.</p>
+<pre><code>git tag v1.0.0
+git push origin v1.0.0</code></pre>
+<p><b>cherry-pick</b> copies a single commit from one branch onto another: <code>git cherry-pick a1b2c3d</code>. It's handy when a fix landed on the wrong branch, or you need one fix on an older release.</p>
+<aside class="say"><h4>Say it like this</h4><p>"Stash that, switch to main and cut the hotfix, then pop the stash when you're back."</p></aside>
+</article>
+
+<article class="ch" id="branch-names" data-part="Branches and remotes" data-title="Naming branches and keeping them tidy">
+<p class="lead">A branch name should tell a stranger what the work is, and branches should die soon after they're born.</p>
+<p><b>The default branch</b> is where finished work ends up. GitHub now calls it <code>main</code> for new repos (older ones may still say <code>master</code>). Treat it as always-working and deployable.</p>
+<p><b>Feature branches</b> are the short-lived ones. Common naming patterns:</p>
+<ul>
+<li><code>feature/login-page</code> for new things</li>
+<li><code>fix/cart-total-rounding</code> for bugs</li>
+<li><code>chore/update-deps</code> for housekeeping</li>
+<li>Include an issue number if you have one: <code>fix/123-cart-rounding</code></li>
+</ul>
+<p>Use lowercase and hyphens, no spaces. Consistency matters more than the exact scheme.</p>
+<p><b>Keep branches short-lived.</b> The longer a branch lives, the further it drifts from main and the worse the conflicts. A day or two is great; a month is a warning sign. Break big pieces of work into several smaller branches.</p>
+<p><b>Clean up after merging.</b> GitHub offers a <b>Delete branch</b> button once a PR merges (and a repo setting to do it automatically). The commits are safe in main, and you can restore a deleted branch from the PR page if you need to. Locally, <code>git fetch --prune</code> removes bookmarks for branches that no longer exist on the remote.</p>
+<aside class="say"><h4>Say it like this</h4><p>"That branch is three weeks old, rebase it or split it up before it becomes a conflict nightmare."</p></aside>
+</article>
+
+<!-- PART 4 -->
+<article class="ch" id="repo-page" data-part="Working on GitHub" data-title="Anatomy of a repository page">
+<p class="lead">Every repo page has the same tabs, and knowing what each is for makes any project easy to navigate.</p>
+<ul>
+<li><b>Code</b>: the files, the branch picker, the green Code button (clone address) and the README shown underneath.</li>
+<li><b>Issues</b>: bugs, ideas and tasks.</li>
+<li><b>Pull requests</b>: proposed changes waiting for review.</li>
+<li><b>Actions</b>: automated workflows and their results.</li>
+<li><b>Projects</b>: boards for planning.</li>
+<li><b>Security</b>: vulnerability alerts, secret scanning and policy.</li>
+<li><b>Insights</b>: activity, contributors and dependency graphs.</li>
+<li><b>Settings</b>: visible only if you have admin rights. Visibility, access, branch rules, secrets and Pages live here.</li>
+</ul>
+<p>A repo is either <b>public</b> (anyone on the internet can see it) or <b>private</b> (only people you invite). Public doesn't mean anyone can change it: only collaborators can push, and everyone else has to propose changes through forks and pull requests.</p>
+<p>On the right of the Code tab you'll see <b>About</b> (description, website link, topics), <b>Releases</b>, <b>Languages</b> and the star and fork counts. A <b>star</b> is a bookmark and a thumbs-up. A <b>watch</b> subscribes you to notifications.</p>
+<p>Handy keys on a repo page: press <code>t</code> to search files by name, <code>.</code> to open the repo in a browser-based editor, and <code>?</code> to see all shortcuts.</p>
+<aside class="say"><h4>Say it like this</h4><p>"It's in the Actions tab, the last run failed on the lint step."</p></aside>
+</article>
+
+<article class="ch" id="readme" data-part="Working on GitHub" data-title="README, licence and community files">
+<p class="lead">The README is your project's front door; the licence says what other people may do with it.</p>
+<p>A <code>README.md</code> in the repo root is shown automatically on the repo page. It's written in <b>Markdown</b>, a simple way to write headings (<code>#</code>), lists (<code>-</code>), links and code blocks with plain text. A good README answers, in order:</p>
+<ol>
+<li><b>What is this?</b> One or two sentences, and a screenshot if it's visual.</li>
+<li><b>How do I run it?</b> The exact commands, from a fresh clone.</li>
+<li><b>How do I configure it?</b> Which environment variables are needed (never the real values).</li>
+<li><b>How do I help?</b> A link to the contributing guide, if there is one.</li>
+</ol>
+<p>Test your README by following it on a clean machine, or asking someone else to. "Works on my machine" is the most common README bug.</p>
+<p>A <b>licence</b> is a file (<code>LICENSE</code>) that says how others may use your code. With no licence, the default is "all rights reserved", which means nobody else may legally reuse it, even though it's visible. Common choices: <b>MIT</b> (do almost anything, keep the notice), <b>Apache 2.0</b> (like MIT with a patent grant), <b>GPL</b> (derived work must also be open source). GitHub can add one for you when you create the repo, and <code>choosealicense.com</code> helps you decide.</p>
+<p>Other files GitHub recognises: <code>CONTRIBUTING.md</code> (how to submit changes), <code>CODE_OF_CONDUCT.md</code> (expected behaviour) and <code>SECURITY.md</code> (how to report a vulnerability privately).</p>
+<aside class="yours"><h4>In your project</h4><p>Write the README for yourself in six months. You will forget how to run your own project, and a five-line README saves you an hour.</p></aside>
+<aside class="say"><h4>Say it like this</h4><p>"The README doesn't say which Node version it needs, can you add that to the setup section?"</p></aside>
+</article>
+
+<article class="ch" id="issues" data-part="Working on GitHub" data-title="Issues">
+<p class="lead">An issue is a written record of something to do: a bug, a feature, a question.</p>
+<p>Issues keep work out of people's heads and chat threads. Each has a number (<code>#42</code>), a title, a description, a comment thread and a status of <b>open</b> or <b>closed</b>. You can assign it to someone, tag it with <b>labels</b> (such as <code>bug</code>, <code>enhancement</code>, <code>good first issue</code>) and attach it to a <b>milestone</b> (a goal such as "v1.0").</p>
+<p>A good bug report has:</p>
+<ul>
+<li><b>What you expected</b> and <b>what happened</b>.</li>
+<li><b>Steps to reproduce</b>, numbered, so anyone can see it for themselves.</li>
+<li><b>Context</b>: browser, version, operating system, error messages, a screenshot.</li>
+</ul>
+<p>A good feature request explains the <em>problem</em> first, then a suggested solution. Maintainers can say yes to a clear problem even if they pick a different fix.</p>
+<p>Two features make issues powerful. <b>Mentions</b>: typing <code>#42</code> in any comment links to that issue, and <code>@username</code> notifies a person. <b>Closing keywords</b>: writing <code>Fixes #42</code> in a pull request description closes the issue automatically when the PR merges to the default branch. Also works with <code>Closes</code> and <code>Resolves</code>.</p>
+<p>Repos can add <b>issue templates</b> (in <code>.github/ISSUE_TEMPLATE/</code>) that give reporters a form to fill in, so you get the details you need.</p>
+<aside class="yours"><h4>In your project</h4><p>Even alone, issues make a handy to-do list that links to the exact code change that finished each task. Write one when you have an idea mid-flow so you don't lose it.</p></aside>
+<aside class="say"><h4>Say it like this</h4><p>"Can you open an issue with repro steps? I'll link the PR so it closes automatically."</p></aside>
+</article>
+
+<article class="ch" id="prs" data-part="Working on GitHub" data-title="Pull requests">
+<p class="lead">A pull request is a conversation about a branch: "here's my change, please look before it joins main".</p>
+<p>The name is a bit backwards: you're asking the owners to <em>pull</em> your changes into their branch. In practice, a <b>PR</b> is a page showing the difference between your branch and the target (the <b>base</b>), the commits, a place to discuss, and the results of automated checks.</p>
+<figure class="fig">
+<svg viewBox="0 0 560 140" role="img" aria-label="Diagram: push a branch, open a pull request, checks run and people review, then merge into main">
+<defs><marker id="arrG4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+<rect class="box" x="10" y="45" width="100" height="56" rx="8"/>
+<text x="60" y="70" text-anchor="middle">Push branch</text>
+<text x="60" y="87" text-anchor="middle" class="t-muted">to GitHub</text>
+<rect class="box-accent" x="155" y="45" width="100" height="56" rx="8"/>
+<text x="205" y="70" text-anchor="middle">Open PR</text>
+<text x="205" y="87" text-anchor="middle" class="t-muted">describe it</text>
+<rect class="box" x="300" y="45" width="100" height="56" rx="8"/>
+<text x="350" y="70" text-anchor="middle">Checks + review</text>
+<text x="350" y="87" text-anchor="middle" class="t-muted">fix and repeat</text>
+<rect class="box" x="445" y="45" width="100" height="56" rx="8"/>
+<text x="495" y="70" text-anchor="middle">Merge</text>
+<text x="495" y="87" text-anchor="middle" class="t-muted">into main</text>
+<line class="arrow" x1="113" y1="73" x2="150" y2="73" marker-end="url(#arrG4)"/>
+<line class="arrow" x1="258" y1="73" x2="295" y2="73" marker-end="url(#arrG4)"/>
+<line class="arrow" x1="403" y1="73" x2="440" y2="73" marker-end="url(#arrG4)"/>
+</svg>
+<figcaption>The PR is the meeting point: your code, the checks and the reviewers all in one place.</figcaption>
+</figure>
+<p>To open one: push your branch, then click the yellow "Compare and pull request" banner on the repo page (or run <code>gh pr create</code>). Fill in:</p>
+<ul>
+<li><b>A title</b> that says what the change does.</li>
+<li><b>A description</b>: why it's needed, what changed, how you tested it, screenshots for visual work, and <code>Fixes #42</code> to link the issue.</li>
+</ul>
+<p>You can open a <b>draft PR</b> early to show work in progress and get feedback; it can't be merged until you mark it <b>Ready for review</b>. Any further commits you push to the branch appear in the same PR automatically.</p>
+<p>Keep PRs <b>small and focused</b>. A 100-line PR gets a careful review; a 2,000-line one gets a nervous "looks good to me".</p>
+<aside class="yours"><h4>In your project</h4><p>Working alone, open PRs against your own main anyway. You get a clean diff to read before merging, your checks run, and each PR becomes a labelled chapter in your project's story.</p></aside>
+<aside class="say"><h4>Say it like this</h4><p>"Open a draft PR early so we can sanity-check the approach before you build the whole thing."</p></aside>
+</article>
+
+<article class="ch" id="reviews" data-part="Working on GitHub" data-title="Code review">
+<p class="lead">A review is a second pair of eyes on a change, and good ones are about the code, not the person.</p>
+<p>On the PR's <b>Files changed</b> tab, you can click the <code>+</code> beside any line to leave a comment, or select several lines. When you've finished, submit the review with one of three verdicts:</p>
+<ul>
+<li><b>Comment</b>: feedback without a decision.</li>
+<li><b>Approve</b>: it's good to merge.</li>
+<li><b>Request changes</b>: something needs fixing first.</li>
+</ul>
+<p>Reviewers can also write <b>suggestions</b>, small edits the author can accept with one click, which creates a commit for them. Conversations can be marked <b>resolved</b> once handled.</p>
+<p><b>As a reviewer</b>, check: does it do what the PR says? Is anything missing (tests, docs, edge cases)? Could it break something else? Could it leak a secret or open a security hole? Be specific, explain why, and separate must-fix from nitpicks ("nit: rename this if you like").</p>
+<p><b>As the author</b>, reply to each comment, push fixes and don't take it personally. Review is how a team keeps quality up and spreads knowledge.</p>
+<p><b>Review AI-written code as hard as you'd review anyone's.</b> It can look confident and be wrong.</p>
+<aside class="say"><h4>Say it like this</h4><p>"Approved with one nit, and I've left a suggestion on the error handling you can accept in one click."</p></aside>
+</article>
+
+<article class="ch" id="merge-methods" data-part="Working on GitHub" data-title="Merge methods: merge, squash and rebase">
+<p class="lead">GitHub's green button actually offers three ways of landing a PR, and each leaves different history behind.</p>
+<div class="tbl"><table>
+<tr><th>Method</th><th>What lands on main</th><th>Use when</th></tr>
+<tr><td><b>Create a merge commit</b></td><td>All the branch's commits plus a merge commit.</td><td>You want a complete record of how the work happened.</td></tr>
+<tr><td><b>Squash and merge</b></td><td>One single commit containing the whole PR.</td><td>The branch has messy "wip" commits and you want main to read as one commit per change. Popular default.</td></tr>
+<tr><td><b>Rebase and merge</b></td><td>Each commit replayed on top of main, no merge commit.</td><td>The commits are already clean and you want a straight line.</td></tr>
+</table></div>
+<p>Repo admins can switch off the methods they don't want in Settings, so the button you see may offer fewer options.</p>
+<p>After squashing, <b>your branch's original commits aren't in main</b>, so delete the branch afterwards, and don't carry on working on it. Start a fresh branch from the updated main.</p>
+<p>Before merging, check three things: checks are green, review is approved, and the PR title reads well. With squash merging, the PR title becomes the commit message on main.</p>
+<aside class="say"><h4>Say it like this</h4><p>"Squash it, we don't need fourteen 'fix typo' commits in main."</p></aside>
+</article>
+
+<article class="ch" id="forks" data-part="Working on GitHub" data-title="Forks and contributing to other people's projects">
+<p class="lead">A fork is your own copy of someone else's repo on GitHub, which lets you propose changes without needing permission to push.</p>
+<p>On a public project you don't have write access. The workflow is:</p>
+<ol>
+<li><b>Fork</b> it (the button at the top right). You now have <code>you/project</code> on GitHub.</li>
+<li><b>Clone</b> your fork to your computer.</li>
+<li>Make a branch, commit and push to <em>your</em> fork.</li>
+<li>Open a <b>pull request</b> from your fork's branch to the original repo.</li>
+</ol>
+<figure class="fig">
+<svg viewBox="0 0 560 150" role="img" aria-label="Diagram: the original repository is forked to your fork on GitHub, which you clone to your laptop; you push back to your fork and open a pull request to the original">
+<defs><marker id="arrG5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+<rect class="box" x="10" y="45" width="130" height="60" rx="8"/>
+<text x="75" y="72" text-anchor="middle">Original repo</text>
+<text x="75" y="89" text-anchor="middle" class="t-muted">upstream</text>
+<rect class="box-accent" x="215" y="45" width="130" height="60" rx="8"/>
+<text x="280" y="72" text-anchor="middle">Your fork</text>
+<text x="280" y="89" text-anchor="middle" class="t-muted">on GitHub</text>
+<rect class="box" x="420" y="45" width="130" height="60" rx="8"/>
+<text x="485" y="72" text-anchor="middle">Your laptop</text>
+<text x="485" y="89" text-anchor="middle" class="t-muted">local clone</text>
+<line class="arrow" x1="143" y1="62" x2="210" y2="62" marker-end="url(#arrG5)"/>
+<line class="arrow" x1="210" y1="90" x2="143" y2="90" marker-end="url(#arrG5)"/>
+<line class="arrow" x1="348" y1="62" x2="415" y2="62" marker-end="url(#arrG5)"/>
+<line class="arrow" x1="415" y1="90" x2="348" y2="90" marker-end="url(#arrG5)"/>
+<text x="177" y="52" text-anchor="middle" class="t-accent">fork</text>
+<text x="177" y="109" text-anchor="middle" class="t-accent">PR</text>
+<text x="382" y="52" text-anchor="middle" class="t-accent">clone</text>
+<text x="382" y="109" text-anchor="middle" class="t-accent">push</text>
+</svg>
+<figcaption>You never push to the original. You push to your fork and ask the owners to pull from it.</figcaption>
+</figure>
+<p>Your fork doesn't update by itself. Use the <b>Sync fork</b> button on your fork's page, or add the original as a second remote called <code>upstream</code>:</p>
+<pre><code>git remote add upstream https://github.com/original/project.git
+git fetch upstream
+git merge upstream/main</code></pre>
+<p>Etiquette for contributing: read <code>CONTRIBUTING.md</code> first, check existing issues, <b>open an issue before doing a big piece of work</b> so you don't waste a weekend on something they'd decline, keep PRs small, and be patient. Maintainers are often volunteers.</p>
+<aside class="say"><h4>Say it like this</h4><p>"I forked it, fixed the typo on a branch and sent a PR. I'll sync my fork before I make another one."</p></aside>
+</article>
+
+<!-- PART 5 -->
+<article class="ch" id="team-flow" data-part="Working in a team" data-title="Team workflows: GitHub flow and friends">
+<p class="lead">A workflow is just an agreement on how changes get from someone's laptop into main.</p>
+<p><b>GitHub flow</b> is the simplest and the most common, and the one this guide has been teaching:</p>
+<ol>
+<li><code>main</code> is always deployable.</li>
+<li>For any change, branch off main with a descriptive name.</li>
+<li>Commit and push regularly.</li>
+<li>Open a pull request (a draft if it's early).</li>
+<li>Get review and green checks.</li>
+<li>Merge to main, delete the branch, deploy.</li>
+</ol>
+<p><b>Trunk-based development</b> pushes the same idea further: branches live for hours, not days, and unfinished features are hidden behind <b>feature flags</b> (switches in code that turn a feature on or off without redeploying). It suits teams with strong automated tests.</p>
+<p><b>Gitflow</b> is an older, heavier model with long-lived <code>develop</code>, <code>release</code> and <code>hotfix</code> branches. It still appears in teams that ship numbered versions on a schedule, but most web teams have moved to something simpler.</p>
+<p>Whichever you use, the principles hold: protect main, keep changes small, review before merging, and let automation do the boring checking.</p>
+<aside class="yours"><h4>In your project</h4><p>Start with GitHub flow. It scales from one person to a whole company, and you can add rules around it later.</p></aside>
+<aside class="say"><h4>Say it like this</h4><p>"We do GitHub flow here: short branches off main, PR, review, squash, deploy."</p></aside>
+</article>
+
+<article class="ch" id="protection" data-part="Working in a team" data-title="Protecting main: branch protection and rulesets">
+<p class="lead">Rules that stop anyone, including you on a tired Friday, from pushing straight to main or merging broken code.</p>
+<p><b>Branch protection rules</b> and their newer, more flexible cousin <b>rulesets</b> (Settings, then Rules or Branches) let you require things before a change can land on a branch. Typical set:</p>
+<ul>
+<li><b>Require a pull request</b> before merging, so nobody pushes directly to main.</li>
+<li><b>Require approvals</b>: for example one reviewer must approve.</li>
+<li><b>Require status checks to pass</b>: tests, lint and build must be green.</li>
+<li><b>Require conversations to be resolved</b> before merging.</li>
+<li><b>Block force pushes and deletion</b> of the branch.</li>
+<li><b>Require linear history</b> or signed commits, if your team wants them.</li>
+</ul>
+<p>Rules apply to everyone unless you allow named people or roles to <b>bypass</b>. A sensible team has very few bypassers.</p>
+<p>A <b>status check</b> is a pass or fail result reported by an automated job (usually GitHub Actions) onto a PR. A PR with a red cross can't be merged if that check is required.</p>
+<p>Availability depends on your plan: rules work on public repos for free; private repos may need a paid plan, so check Settings if the options are missing.</p>
+<aside class="yours"><h4>In your project</h4><p>Even solo, "require a PR and passing checks" on main is a cheap seatbelt, especially once AI tools or automation have push access.</p></aside>
+<aside class="say"><h4>Say it like this</h4><p>"Main is protected, so you need a PR, one approval and green checks. No direct pushes."</p></aside>
+</article>
+
+<article class="ch" id="codeowners" data-part="Working in a team" data-title="CODEOWNERS and templates">
+<p class="lead">Small files in your repo that route reviews to the right people and make every PR and issue consistent.</p>
+<p><b>CODEOWNERS</b> is a file (at <code>.github/CODEOWNERS</code>) that maps paths to people or teams. When a PR changes those files, GitHub automatically requests a review from the owner, and protection rules can require their approval.</p>
+<pre><code># everything defaults to the core team
+*            @acme/core-team
+# payments code needs a payments reviewer
+/payments/   @acme/payments
+# docs can be reviewed by anyone on docs
+*.md         @acme/docs</code></pre>
+<p>A <b>pull request template</b> (<code>.github/pull_request_template.md</code>) pre-fills the description box with headings you want filled in, for example "What changed", "How to test" and "Screenshots". <b>Issue templates</b> do the same for bug reports and requests.</p>
+<p>Together, these remove a lot of "who should look at this?" and "what does this change even do?" questions.</p>
+<aside class="say"><h4>Say it like this</h4><p>"Anything under /infra needs a CODEOWNERS approval, so it'll auto-request the platform team."</p></aside>
+</article>
+
+<article class="ch" id="projects" data-part="Working in a team" data-title="Labels, milestones and Projects">
+<p class="lead">Three ways of organising work on GitHub, from lightweight to full planning board.</p>
+<ul>
+<li><b>Labels</b> are coloured tags on issues and PRs: <code>bug</code>, <code>docs</code>, <code>blocked</code>, <code>good first issue</code>. Use them for type and status, and keep the set small.</li>
+<li><b>Milestones</b> group issues and PRs towards a goal or date, such as "v1.0 launch", and show a progress bar.</li>
+<li><b>GitHub Projects</b> are flexible boards and tables across many repos. Cards are issues and PRs, with columns such as Todo, In progress and Done, plus custom fields like priority or size. Automations can move items as PRs open and merge.</li>
+</ul>
+<p>The common loop: an idea becomes an <b>issue</b>, goes onto the <b>Project</b> board, someone picks it up and opens a <b>PR</b> that says <code>Fixes #n</code>, and when it merges the card moves to Done on its own.</p>
+<p>Don't over-engineer this. A small team can run happily on issues plus labels; reach for Projects when you need an overview.</p>
+<aside class="say"><h4>Say it like this</h4><p>"Label it 'blocked' and put it in the next milestone, we can't ship the release without it."</p></aside>
+</article>
+
+<article class="ch" id="orgs" data-part="Working in a team" data-title="Organisations, teams and permissions">
+<p class="lead">An organisation is a shared account for a group, so repos belong to the team rather than to one person.</p>
+<p>A personal repo lives at <code>github.com/you/project</code>; an organisation's lives at <code>github.com/acme/project</code>. If the person who owns a personal repo leaves, the project goes with them, which is why teams use organisations.</p>
+<p>Within an organisation you group people into <b>teams</b> (<code>@acme/backend</code>) and give those teams access to repos. The roles on a repo, from least to most power:</p>
+<div class="tbl"><table>
+<tr><th>Role</th><th>Can do</th></tr>
+<tr><td>Read</td><td>View and clone; comment on issues and PRs.</td></tr>
+<tr><td>Triage</td><td>Read, plus manage issues and PRs (labels, assign), no code changes.</td></tr>
+<tr><td>Write</td><td>Push branches, review and merge PRs.</td></tr>
+<tr><td>Maintain</td><td>Write, plus manage the repo without sensitive settings.</td></tr>
+<tr><td>Admin</td><td>Everything, including settings, secrets and deleting the repo.</td></tr>
+</table></div>
+<p>Principle of <b>least privilege</b>: give people the lowest role that lets them do their job. Most contributors need Write at most. Organisations also get <b>owners</b> (who control billing and membership), single sign-on options, and audit logs on paid plans.</p>
+<p>For outside helpers, invite them as an <b>outside collaborator</b> on a single repo rather than adding them to the whole organisation.</p>
+<aside class="say"><h4>Say it like this</h4><p>"Give the contractor Write on that one repo as an outside collaborator, not org membership."</p></aside>
+</article>
+
+<article class="ch" id="etiquette" data-part="Working in a team" data-title="Working well with others">
+<p class="lead">Most team friction comes from habits, not tools, and a few habits fix most of it.</p>
+<ul>
+<li><b>Small PRs.</b> Aim for something a reviewer can read in 15 minutes. If it's bigger, split it.</li>
+<li><b>Describe your change.</b> Say what and why, how to test it, and link the issue. A review request with no description is rude.</li>
+<li><b>Self-review first.</b> Read your own diff on the Files changed tab before asking anyone else. You'll spot leftovers.</li>
+<li><b>Review promptly.</b> A PR waiting for days blocks the author and invites conflicts.</li>
+<li><b>Keep feedback kind and specific.</b> Comment on the code, not the person. Ask questions ("what happens if this is empty?") rather than issuing verdicts.</li>
+<li><b>Don't force-push to a branch someone is reviewing</b> without saying so. It breaks their sense of what changed.</li>
+<li><b>Pull often</b> so you build on the latest main.</li>
+<li><b>Use the PR for decisions.</b> If it was decided in chat, write the outcome down on the PR or issue so it isn't lost.</li>
+<li><b>Notifications</b>: tune them (Settings, Notifications) so they don't bury you. Watching "Participating and @mentions" is a good default.</li>
+</ul>
+<aside class="say"><h4>Say it like this</h4><p>"This one is big, can we split the refactor from the feature so review is quicker?"</p></aside>
+</article>
+
+<!-- PART 6 -->
+<article class="ch" id="actions" data-part="Automation and shipping" data-title="GitHub Actions: automation in your repo">
+<p class="lead">Actions run a script on GitHub's computers whenever something happens in your repo, such as a push or a new PR.</p>
+<p>A <b>workflow</b> is a YAML file (a plain-text config format) in <code>.github/workflows/</code>. It names the <b>event</b> that triggers it (<code>on</code>), and one or more <b>jobs</b>, each made of <b>steps</b> that run on a <b>runner</b> (a temporary virtual machine GitHub provides). Steps either run shell commands (<code>run</code>) or use ready-made <b>actions</b> shared by others (<code>uses</code>).</p>
+<pre><code>name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test</code></pre>
+<p>That file means: on every PR and every push to main, check out the code, install Node, install dependencies and run the tests. Results appear as ticks and crosses on the PR and in the <b>Actions</b> tab, where you can open the logs.</p>
+<p>This is <b>CI</b> (continuous integration): automatically building and testing every change so problems show up before merge. Combine it with a <b>required status check</b> (see the protection chapter) and broken code can't reach main.</p>
+<p>Other common triggers: <code>schedule</code> (a cron timer, for nightly jobs), <code>workflow_dispatch</code> (a manual "Run" button) and <code>release</code>. Public repos run Actions free; private repos get a monthly free allowance, so check the pricing page before running something heavy.</p>
+<p>A few safety habits: set <code>permissions:</code> to the minimum the job needs, and treat third-party actions as code you're running, so prefer well-known ones and pin versions (check each action's page for its latest major version).</p>
+<aside class="yours"><h4>In your project</h4><p>Start with one workflow that runs your tests and build on every PR. It takes ten lines and catches the "it worked until I touched that other file" problem.</p></aside>
+<aside class="say"><h4>Say it like this</h4><p>"CI is red because the lint step failed. Check the Actions log, it's a missing semicolon."</p></aside>
+</article>
+
+<article class="ch" id="actions-secrets" data-part="Automation and shipping" data-title="Secrets, variables and environments">
+<p class="lead">Workflows often need passwords and keys; GitHub stores them encrypted so they never go in your code.</p>
+<p>In Settings, then Secrets and variables, you can add:</p>
+<ul>
+<li><b>Secrets</b>: encrypted values (deploy keys, API tokens). Once saved you can't view them again, only replace them. Use them in a workflow as <code>${{ secrets.DEPLOY_TOKEN }}</code>. GitHub masks them in logs.</li>
+<li><b>Variables</b>: plain, non-sensitive settings (a region name, a site URL), used as <code>${{ vars.SITE_URL }}</code>.</li>
+</ul>
+<p>An <b>environment</b> (such as <code>staging</code> or <code>production</code>) is a named target with its own secrets and optional protections, such as requiring a person to click approve before deploying to production.</p>
+<p>Important limits: workflows triggered from a <b>fork's</b> PR don't get your secrets (otherwise a stranger could write a PR that steals them). And a workflow still shouldn't print a secret, so don't <code>echo</code> them.</p>
+<p>Where possible, prefer <b>short-lived credentials</b> over stored keys. For major clouds, GitHub Actions can use <b>OIDC</b> to get a temporary token directly, so there's no long-lived secret to leak.</p>
+<aside class="say"><h4>Say it like this</h4><p>"The deploy token lives in the production environment's secrets, and prod needs a manual approval."</p></aside>
+</article>
+
+<article class="ch" id="pages" data-part="Automation and shipping" data-title="GitHub Pages and deploying">
+<p class="lead">Pages turns a repo into a free website, and the same push-to-deploy idea works with other hosts too.</p>
+<p><b>GitHub Pages</b> hosts static sites (HTML, CSS, JavaScript) straight from a repo, at <code>you.github.io/project</code> or on your own domain. Switch it on under Settings, then Pages. Pick either "deploy from a branch" or "GitHub Actions" as the source; the latter is best if your site needs a build step (such as Astro, Vite or Jekyll). It's free for public repos and available for private ones on paid plans.</p>
+<p>Pages only serves <b>static</b> files. If you need a server, a database or secrets at runtime, use a host that runs code.</p>
+<p>The general pattern, on any host, is <b>push to deploy</b>: connect a host such as Cloudflare Pages, Vercel, Netlify or Render to your repo, and every merge to main triggers a build and a deploy. Many of them also create a <b>preview deployment</b> for each PR, a throwaway URL showing that exact branch, which you can share for review before merging.</p>
+<p>Keep the deploy tied to main (not to random branches), and make sure checks pass first. Then "merge" becomes the one button that ships.</p>
+<aside class="yours"><h4>In your project</h4><p>Preview URLs are great for vibe-coded projects: you see the real result of every change, and you can send the link to a friend before it's live.</p></aside>
+<aside class="say"><h4>Say it like this</h4><p>"Merge to main and it deploys. Use the preview URL on the PR to check it first."</p></aside>
+</article>
+
+<article class="ch" id="releases" data-part="Automation and shipping" data-title="Tags, releases and versions">
+<p class="lead">A release is a named, versioned snapshot of your project that people can download or depend on.</p>
+<p>A <b>tag</b> labels one commit (<code>v1.4.2</code>). A <b>GitHub Release</b> sits on top of a tag and adds a title, notes describing what changed, and optional downloadable files. Create one from the Releases section on the repo page (or <code>gh release create v1.4.2</code>); GitHub can generate the notes from your merged PRs.</p>
+<p>Most projects use <b>semantic versioning</b> (<b>semver</b>): three numbers, <code>MAJOR.MINOR.PATCH</code>.</p>
+<div class="tbl"><table>
+<tr><th>Bump</th><th>When</th><th>Example</th></tr>
+<tr><td>PATCH</td><td>Bug fix, nothing else changes.</td><td>1.4.2 to 1.4.3</td></tr>
+<tr><td>MINOR</td><td>New feature, still compatible.</td><td>1.4.3 to 1.5.0</td></tr>
+<tr><td>MAJOR</td><td>Breaking change; users must adapt.</td><td>1.5.0 to 2.0.0</td></tr>
+</table></div>
+<p>A <b>changelog</b> (a <code>CHANGELOG.md</code> or the release notes) tells users what's new and what to watch out for. A <b>pre-release</b> flag (<code>v2.0.0-beta.1</code>) lets you publish something for testing without calling it final. If you publish a library, a release can trigger a workflow that publishes to npm, PyPI or a container registry.</p>
+<p>A <b>release</b> and a <b>deploy</b> are different: a release names a version; a deploy puts some version on servers.</p>
+<aside class="say"><h4>Say it like this</h4><p>"It's a breaking change so that's a major bump. Tag v2.0.0 and write it up in the release notes."</p></aside>
+</article>
+
+<article class="ch" id="security-features" data-part="Automation and shipping" data-title="Dependabot and GitHub's security tools">
+<p class="lead">Most security problems in small projects come from outdated dependencies and leaked keys, and GitHub watches for both.</p>
+<p>The Security tab collects several free-for-public-repos tools:</p>
+<ul>
+<li><b>Dependabot alerts</b> tell you when a library you use has a known vulnerability.</li>
+<li><b>Dependabot security updates</b> open a PR automatically that upgrades the vulnerable dependency.</li>
+<li><b>Dependabot version updates</b> (configured in <code>.github/dependabot.yml</code>) open regular PRs to keep dependencies fresh, so upgrades stay small instead of piling up.</li>
+<li><b>Secret scanning</b> and <b>push protection</b> catch leaked keys, as covered earlier.</li>
+<li><b>Code scanning</b> (CodeQL) analyses your code for common vulnerability patterns and reports them on PRs.</li>
+<li><b>Private vulnerability reporting</b> lets people tell you about a problem confidentially instead of in a public issue.</li>
+</ul>
+<pre><code>version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"</code></pre>
+<p>A <b>dependency</b> is a library your project uses; a <b>lockfile</b> (<code>package-lock.json</code>, <code>poetry.lock</code>) records the exact versions, and should be committed. Dependabot PRs should still be reviewed and tested; green checks are what make them safe to merge quickly.</p>
+<aside class="yours"><h4>In your project</h4><p>Turn on Dependabot alerts and security updates today. It's two clicks and it's the cheapest security win available.</p></aside>
+<aside class="say"><h4>Say it like this</h4><p>"Dependabot opened a PR for the vulnerable package, CI is green, so merge it."</p></aside>
+</article>
+
+<!-- PART 7 -->
+<article class="ch" id="ai-safety" data-part="Working with AI tools" data-title="Git as the safety net for AI coding">
+<p class="lead">AI tools can change dozens of files in seconds, and Git is how you stay in control of that.</p>
+<p>When an assistant writes or edits code for you, the risk isn't that it's always wrong; it's that changes are big, fast and hard to follow. A few habits make this safe:</p>
+<ol>
+<li><b>Start from a clean state.</b> Run <code>git status</code>. If there are uncommitted changes, commit or stash them first, so the AI's changes are the only ones in the diff.</li>
+<li><b>Work on a branch.</b> <code>git switch -c try-new-header</code> before you start. If it all goes wrong, delete the branch.</li>
+<li><b>Commit after every working step.</b> Each success becomes a save point you can return to.</li>
+<li><b>Read the diff before you commit.</b> <code>git diff</code> or the Source Control panel. Look for deleted files, changed config, new dependencies and anything that looks like a key.</li>
+<li><b>Run it and test it.</b> "It compiled" isn't "it works".</li>
+<li><b>If it spirals, stop and reset.</b> <code>git restore .</code> discards uncommitted changes (and any new untracked files stay, so check <code>git status</code>); <code>git reset --hard</code> goes back to the last commit. A fresh start from a clear prompt beats ten rounds of patching.</li>
+</ol>
+<p>Be wary of anything the assistant wants to run that you don't understand, especially commands that delete files, change history (<code>--force</code>, <code>reset --hard</code>) or install unfamiliar packages. And don't paste secrets into prompts.</p>
+<aside class="warn"><h4>Careful</h4><p>Never give an AI tool your <code>.env</code> contents, tokens or private keys, and make sure <code>.env</code> is in <code>.gitignore</code> before you let any tool "commit everything".</p></aside>
+<aside class="say"><h4>Say it like this</h4><p>"I committed before I let the agent loose, so if it made a mess I can just reset."</p></aside>
+</article>
+
+<article class="ch" id="ai-agents" data-part="Working with AI tools" data-title="AI agents, pull requests and review">
+<p class="lead">Coding agents can now open pull requests themselves, which makes the PR and its checks your main control point.</p>
+<p>Tools such as GitHub's Copilot coding agent and Claude Code can read an issue, write code on a branch and open a PR for you to review. Treat that PR exactly like one from a new teammate: it needs a clear description, passing checks and a human reading the diff. A few practices help:</p>
+<ul>
+<li><b>Write clear issues.</b> The better the description (what, why, how you'd know it's done), the better the result. Vague in, vague out.</li>
+<li><b>Keep tasks small.</b> One agent task, one focused PR. Big vague tasks produce big vague diffs.</li>
+<li><b>Let checks do the first review.</b> Tests, lint and type checks catch a lot of AI mistakes automatically. If you don't have tests, ask for them as part of the change.</li>
+<li><b>Review for what AI tends to get wrong:</b> invented functions or libraries, silently deleted tests, duplicated code, hard-coded values, missing error handling and security shortcuts.</li>
+<li><b>Protect main.</b> Branch protection means an agent (or you) can't push there directly, and a human approval is required.</li>
+<li><b>Limit its access.</b> Give tokens the narrowest permissions and shortest life that work, and keep production secrets out of reach.</li>
+</ul>
+<p>You can also use AI as <em>reviewer</em>: Copilot code review and similar tools comment on PRs. They're a useful extra pair of eyes but not a replacement for yours.</p>
+<aside class="yours"><h4>In your project</h4><p>The loop that works: write an issue, let the tool do a branch and PR, read the diff, let CI run, fix or ask for changes, then merge. You stay the editor.</p></aside>
+<aside class="say"><h4>Say it like this</h4><p>"The agent's PR touches forty files for a one-line change. Send it back and ask for a smaller diff."</p></aside>
+</article>
+
+<article class="ch" id="gh-cli" data-part="Working with AI tools" data-title="The GitHub CLI">
+<p class="lead">The <code>gh</code> command lets you do GitHub things (PRs, issues, releases) from your terminal without opening the browser.</p>
+<p>It's a separate tool from Git: Git handles commits and branches, <code>gh</code> talks to GitHub's website features. Install it, then sign in once with <code>gh auth login</code>.</p>
+<pre><code>gh repo create my-app --private --source=. --push
+gh pr create --fill          # open a PR using your commit messages
+gh pr status                 # your PRs and their checks
+gh pr checkout 123           # fetch someone's PR branch to try it
+gh pr merge --squash --delete-branch
+gh issue create --title "Fix login bug"
+gh run list                  # recent Actions runs
+gh run view --log-failed     # why did CI fail?</code></pre>
+<p>It's especially handy for AI tooling and scripts, because commands are predictable text. Many coding agents use <code>gh</code> behind the scenes to open PRs and read CI results.</p>
+<aside class="say"><h4>Say it like this</h4><p>"Just run gh pr checkout and try it locally, no need to add their fork as a remote."</p></aside>
+</article>
+
+<article class="ch" id="codespaces" data-part="Working with AI tools" data-title="Codespaces and editing in the browser">
+<p class="lead">You don't always need to install anything: GitHub can give you a full editor in a browser tab.</p>
+<ul>
+<li><b>github.dev</b>: press <code>.</code> on any repo page for a lightweight VS Code in your browser. Great for quick edits and reading code; it can't run your app.</li>
+<li><b>Codespaces</b>: a full cloud development machine for your repo, with a terminal, your tools installed and the app running. Open one from the Code button. There's a monthly free allowance, and they stop automatically when idle, but remember to delete ones you don't need.</li>
+<li><b>Dev containers</b>: a <code>.devcontainer/devcontainer.json</code> file in the repo defines the setup (languages, extensions), so everyone's environment is identical. It also removes "works on my machine" for new teammates.</li>
+</ul>
+<p>The web editor on a file page (pencil icon) is fine for fixing a typo: it will offer to commit on a new branch and open a PR in one go.</p>
+<aside class="say"><h4>Say it like this</h4><p>"Spin up a codespace instead of installing everything, the devcontainer has the whole setup."</p></aside>
+</article>
+
+<!-- PART 8 -->
+<article class="ch" id="errors" data-part="When things go wrong" data-title="Common errors and how to fix them">
+<p class="lead">Nearly every Git panic is one of these, and none of them is the end of the world.</p>
+<div class="tbl"><table>
+<tr><th>What you see</th><th>What it means and what to do</th></tr>
+<tr><td><code>rejected ... (fetch first)</code> or <code>non-fast-forward</code></td><td>The remote has commits you don't. <code>git pull</code> (or <code>git pull --rebase</code>), fix any conflicts, push again.</td></tr>
+<tr><td><code>CONFLICT (content): Merge conflict in file</code></td><td>Two edits touched the same lines. Open the file, resolve the markers, <code>git add</code>, commit. Or <code>git merge --abort</code> to retreat.</td></tr>
+<tr><td><code>You are in 'detached HEAD' state</code></td><td>You checked out a commit, not a branch. Commits made here are easy to lose. If you want to keep them: <code>git switch -c new-branch-name</code>. If not: <code>git switch main</code>.</td></tr>
+<tr><td>I committed on <code>main</code> by mistake</td><td>Before pushing: <code>git branch fix/my-change</code> (saves the commit on a new branch), then <code>git reset --hard origin/main</code> on main. Then switch to the new branch.</td></tr>
+<tr><td>My commit has the wrong message</td><td>If not pushed: <code>git commit --amend</code>. If pushed, leave it and move on.</td></tr>
+<tr><td><code>Permission denied (publickey)</code></td><td>GitHub doesn't know your SSH key. Add the public key in Settings, SSH and GPG keys, or use HTTPS with <code>gh auth login</code>.</td></tr>
+<tr><td><code>Authentication failed</code> over HTTPS</td><td>Passwords aren't accepted. Sign in with <code>gh auth login</code> or use a credential manager or token.</td></tr>
+<tr><td><code>file exceeds GitHub's file size limit of 100 MB</code></td><td>Remove the file from the commit and add it to <code>.gitignore</code>. For big assets that must be versioned, use <b>Git LFS</b>.</td></tr>
+<tr><td>Changes I made aren't showing in <code>git status</code></td><td>The file might be gitignored, or you're in the wrong folder or on a different branch. Check <code>git branch</code> and <code>pwd</code>.</td></tr>
+<tr><td>I committed with the wrong name or email</td><td>Fix your <code>git config</code> for next time. For the last commit: <code>git commit --amend --reset-author</code> (if not pushed).</td></tr>
+<tr><td>I deleted a branch or lost commits</td><td>Run <code>git reflog</code>, find the commit, <code>git switch -c rescued a1b2c3d</code>.</td></tr>
+</table></div>
+<p>About <code>--force</code>: <code>git push --force</code> overwrites the remote branch with yours, and can destroy other people's commits. If you must (for example after rebasing your own branch), use <code>git push --force-with-lease</code>, which refuses if someone else pushed in the meantime. Never force-push to main.</p>
+<aside class="say"><h4>Say it like this</h4><p>"I'm in detached HEAD. Let me make a branch from here before I lose anything."</p></aside>
+</article>
+
+<article class="ch" id="mixups" data-part="When things go wrong" data-title="Terms that are often mixed up">
+<p class="lead">Pairs that sound similar but mean different things. Getting these right is where credibility shows.</p>
+<div class="tbl"><table>
+<tr><th>Often confused</th><th>The difference</th></tr>
+<tr><td>Git vs GitHub</td><td>The version-control tool on your machine versus a website that hosts Git repos and adds collaboration.</td></tr>
+<tr><td>Fork vs clone</td><td>A fork is a copy on GitHub under your account; a clone is a copy on your computer. You often do both.</td></tr>
+<tr><td>Fork vs branch</td><td>A branch is a line of work inside one repo; a fork is a whole separate repo.</td></tr>
+<tr><td>Fetch vs pull</td><td>Fetch downloads without changing your files; pull is fetch plus a merge.</td></tr>
+<tr><td>Commit vs push</td><td>Commit saves a snapshot locally; push uploads commits to a remote.</td></tr>
+<tr><td>Merge vs rebase</td><td>Joining histories with a merge commit versus replaying your commits on top, with new IDs.</td></tr>
+<tr><td>Revert vs reset</td><td>Revert adds a new commit that undoes an old one; reset moves the branch pointer back.</td></tr>
+<tr><td>Pull request vs merge request</td><td>Same thing: GitHub says pull request, GitLab says merge request.</td></tr>
+<tr><td>Issue vs pull request</td><td>An issue describes a problem or idea; a PR contains code to deal with it.</td></tr>
+<tr><td>Tag vs release</td><td>A tag labels a commit; a release is GitHub's page built on a tag, with notes and files.</td></tr>
+<tr><td>Release vs deploy</td><td>Naming a version versus putting some version on a server.</td></tr>
+<tr><td>CI vs CD</td><td>Continuous integration tests every change; continuous delivery or deployment ships it.</td></tr>
+<tr><td>Secret vs variable (in Actions)</td><td>Secrets are encrypted and hidden; variables are plain, non-sensitive settings.</td></tr>
+<tr><td>Private vs public repo</td><td>Visible only to people you invite versus visible to the whole internet.</td></tr>
+<tr><td>Star vs watch vs fork</td><td>Bookmark, subscribe to notifications, copy to your account.</td></tr>
+<tr><td><code>origin</code> vs <code>upstream</code></td><td>Origin is where you cloned from (often your fork); upstream is the original project you forked.</td></tr>
+</table></div>
+</article>
+
+<article class="ch" id="talk" data-part="When things go wrong" data-title="Describing your workflow like an engineer">
+<p class="lead">Putting it together: the same way of working, said three ways.</p>
+<p>Engineers describe a workflow in order, naming each step and its safeguard. Here's a solo project at three levels of detail.</p>
+<p><b>The one-liner:</b></p>
+<aside class="say"><p>"Everything goes through short-lived branches and pull requests, CI runs the tests, and merging to main deploys."</p></aside>
+<p><b>The thirty-second version:</b></p>
+<aside class="say"><p>"Main is protected, so I never commit to it directly. For each change I branch off, commit in small steps, push and open a PR. The PR runs the build and tests through GitHub Actions and gets a preview deployment. I read my own diff before merging, squash-merge it and the branch deletes itself. Merging to main deploys to production."</p></aside>
+<p><b>The team answer, if someone asks about safety:</b></p>
+<aside class="say"><p>"Direct pushes and force pushes to main are blocked, a PR needs one approval and green checks, CODEOWNERS routes sensitive paths to the right reviewer, secrets live in environment settings rather than code, Dependabot and secret scanning are on, and AI-authored PRs go through the same review as anyone's."</p></aside>
+<p>Notice the pattern: where work happens, how it's checked, how it lands, how it ships, and what stops mistakes. That structure works for any team.</p>
+</article>
+
+<!-- REFERENCE -->
+<article class="ch" id="cheatsheet" data-part="Reference" data-title="Command cheat sheet">
+<p class="lead">The commands you'll use ninety percent of the time, in the order you'll probably need them.</p>
+<h4>Set up</h4>
+<div class="tbl"><table>
+<tr><th>Command</th><th>What it does</th></tr>
+<tr><td><code>git clone &lt;url&gt;</code></td><td>Download a repo.</td></tr>
+<tr><td><code>git init</code></td><td>Turn the current folder into a repo.</td></tr>
+<tr><td><code>git remote -v</code></td><td>Show the remotes and their URLs.</td></tr>
+<tr><td><code>git config --global user.name "Name"</code></td><td>Set who your commits are from.</td></tr>
+</table></div>
+<h4>Daily loop</h4>
+<div class="tbl"><table>
+<tr><th>Command</th><th>What it does</th></tr>
+<tr><td><code>git status</code></td><td>What's changed and which branch you're on.</td></tr>
+<tr><td><code>git pull</code></td><td>Get the latest from the remote.</td></tr>
+<tr><td><code>git switch -c name</code></td><td>Create and move to a new branch.</td></tr>
+<tr><td><code>git add file</code> / <code>git add -p</code></td><td>Stage a file / stage chosen chunks.</td></tr>
+<tr><td><code>git commit -m "message"</code></td><td>Save the staged changes as a commit.</td></tr>
+<tr><td><code>git push -u origin name</code></td><td>Upload a new branch (first time).</td></tr>
+<tr><td><code>git push</code></td><td>Upload new commits.</td></tr>
+</table></div>
+<h4>Look around</h4>
+<div class="tbl"><table>
+<tr><th>Command</th><th>What it does</th></tr>
+<tr><td><code>git diff</code> / <code>git diff --staged</code></td><td>See unstaged / staged changes.</td></tr>
+<tr><td><code>git log --oneline --graph</code></td><td>Compact history with branch shape.</td></tr>
+<tr><td><code>git show &lt;hash&gt;</code></td><td>One commit in full.</td></tr>
+<tr><td><code>git blame file</code></td><td>Who last changed each line.</td></tr>
+<tr><td><code>git branch</code></td><td>List branches.</td></tr>
+</table></div>
+<h4>Combine and undo</h4>
+<div class="tbl"><table>
+<tr><th>Command</th><th>What it does</th></tr>
+<tr><td><code>git merge name</code></td><td>Merge a branch into the current one.</td></tr>
+<tr><td><code>git rebase main</code></td><td>Replay your branch on top of main.</td></tr>
+<tr><td><code>git stash</code> / <code>git stash pop</code></td><td>Shelve / restore uncommitted changes.</td></tr>
+<tr><td><code>git restore file</code></td><td>Discard uncommitted edits to a file.</td></tr>
+<tr><td><code>git restore --staged file</code></td><td>Unstage a file.</td></tr>
+<tr><td><code>git commit --amend</code></td><td>Fix the last commit (before pushing).</td></tr>
+<tr><td><code>git revert &lt;hash&gt;</code></td><td>Undo a commit with a new commit.</td></tr>
+<tr><td><code>git reflog</code></td><td>Find commits you thought were lost.</td></tr>
+<tr><td><code>git merge --abort</code> / <code>git rebase --abort</code></td><td>Back out of a merge or rebase.</td></tr>
+</table></div>
+<h4>GitHub CLI</h4>
+<div class="tbl"><table>
+<tr><th>Command</th><th>What it does</th></tr>
+<tr><td><code>gh auth login</code></td><td>Sign in once.</td></tr>
+<tr><td><code>gh pr create --fill</code></td><td>Open a PR from the current branch.</td></tr>
+<tr><td><code>gh pr checkout 123</code></td><td>Try someone else's PR locally.</td></tr>
+<tr><td><code>gh pr merge --squash</code></td><td>Merge a PR with squash.</td></tr>
+<tr><td><code>gh run view --log-failed</code></td><td>See why CI failed.</td></tr>
+</table></div>
+</article>
+
+<!-- GLOSSARY -->
+<article class="ch" id="glossary" data-part="Reference" data-title="Glossary">
+<p class="lead">Quick definitions. Filter to jump to a term.</p>
+<input class="search gloss-filter" id="gloss-filter" type="search" placeholder="Filter terms" aria-label="Filter glossary">
+<dl class="gloss" id="gloss">
+<dt>Actions (GitHub Actions)</dt><dd>GitHub's built-in automation that runs workflows when things happen in a repo.</dd>
+<dt>Amend</dt><dd>Rewrite the most recent commit, for example to fix its message. Only before pushing.</dd>
+<dt>Base branch</dt><dd>The branch a pull request will be merged into, usually main.</dd>
+<dt>Blame</dt><dd>A view showing who last changed each line of a file, and in which commit.</dd>
+<dt>Branch</dt><dd>A movable label pointing at a commit, used as a separate line of work.</dd>
+<dt>Branch protection</dt><dd>Rules that must be met before changes can land on a branch, such as reviews and passing checks.</dd>
+<dt>Check / status check</dt><dd>An automated pass or fail result shown on a pull request.</dd>
+<dt>Cherry-pick</dt><dd>Copy a single commit from one branch onto another.</dd>
+<dt>CI / CD</dt><dd>Continuous integration (test every change) and continuous delivery or deployment (ship it).</dd>
+<dt>Clone</dt><dd>Download a full copy of a repo, history included.</dd>
+<dt>CODEOWNERS</dt><dd>A file mapping parts of a repo to the people or teams who review changes there.</dd>
+<dt>Collaborator</dt><dd>A person given access to a repo that isn't theirs.</dd>
+<dt>Commit</dt><dd>A saved snapshot of the project with a message, author and unique hash.</dd>
+<dt>Conflict</dt><dd>Two changes touching the same lines, which Git asks a human to resolve.</dd>
+<dt>Conventional Commits</dt><dd>A naming style for commit messages such as feat: or fix:.</dd>
+<dt>Dependabot</dt><dd>GitHub's tool for alerting you about vulnerable dependencies and opening upgrade PRs.</dd>
+<dt>Dependency</dt><dd>A library or package your project relies on.</dd>
+<dt>Detached HEAD</dt><dd>Being on a specific commit rather than on a branch.</dd>
+<dt>Diff</dt><dd>A line-by-line view of what changed between two versions.</dd>
+<dt>Draft PR</dt><dd>A pull request marked as work in progress that can't be merged yet.</dd>
+<dt>Environment</dt><dd>A named deploy target, such as staging or production, with its own secrets and rules.</dd>
+<dt>Fast-forward</dt><dd>A merge where Git just moves the branch pointer forward because nothing diverged.</dd>
+<dt>Feature flag</dt><dd>A switch in code that turns a feature on or off without redeploying.</dd>
+<dt>Fetch</dt><dd>Download new commits from a remote without changing your files.</dd>
+<dt>Fork</dt><dd>Your own copy of someone else's repo on GitHub.</dd>
+<dt>Force push</dt><dd>Overwriting a remote branch with your version. Use --force-with-lease if you must.</dd>
+<dt>Git LFS</dt><dd>Git Large File Storage, for tracking big files without bloating the repo.</dd>
+<dt>.gitignore</dt><dd>A file listing patterns Git should not track.</dd>
+<dt>GitHub flow</dt><dd>Branch off main, open a PR, review, merge, deploy. The simplest team workflow.</dd>
+<dt>Hash</dt><dd>The long ID of a commit, often shortened to seven characters.</dd>
+<dt>HEAD</dt><dd>The commit you're currently on, normally the tip of your current branch.</dd>
+<dt>Index</dt><dd>Another name for the staging area.</dd>
+<dt>Issue</dt><dd>A tracked bug, task or idea with a number and discussion thread.</dd>
+<dt>Label</dt><dd>A coloured tag on issues and PRs for sorting and filtering.</dd>
+<dt>Licence</dt><dd>A file stating how others may use your code.</dd>
+<dt>Local</dt><dd>The copy of a repo on your own computer.</dd>
+<dt>Lockfile</dt><dd>A file recording the exact dependency versions installed, which should be committed.</dd>
+<dt>main</dt><dd>The conventional name for a repo's primary branch.</dd>
+<dt>Markdown</dt><dd>Simple text formatting used in READMEs, issues and PR descriptions.</dd>
+<dt>Merge</dt><dd>Combine one branch's changes into another.</dd>
+<dt>Merge commit</dt><dd>A commit that joins two branches together.</dd>
+<dt>Milestone</dt><dd>A group of issues and PRs aimed at a goal or date.</dd>
+<dt>Organisation</dt><dd>A shared GitHub account that owns repos on behalf of a group.</dd>
+<dt>origin</dt><dd>The default name for the remote you cloned from.</dd>
+<dt>OIDC</dt><dd>A way for workflows to get short-lived cloud credentials instead of storing keys.</dd>
+<dt>Passkey</dt><dd>A phishing-resistant login stored on your device that replaces a password.</dd>
+<dt>PAT</dt><dd>Personal access token, a password-like string with limited powers for tools and scripts.</dd>
+<dt>Pull</dt><dd>Fetch from a remote and merge the new commits into your current branch.</dd>
+<dt>Pull request (PR)</dt><dd>A proposal to merge one branch into another, with discussion, review and checks.</dd>
+<dt>Push</dt><dd>Upload your local commits to a remote.</dd>
+<dt>Push protection</dt><dd>A GitHub feature that blocks pushes containing detected secrets.</dd>
+<dt>Rebase</dt><dd>Replay your commits on top of another branch, giving them new IDs.</dd>
+<dt>Reflog</dt><dd>A local log of where HEAD has been, used to recover lost commits.</dd>
+<dt>Release</dt><dd>A named, versioned snapshot on GitHub, with notes and optional files.</dd>
+<dt>Remote</dt><dd>A copy of the repo hosted elsewhere, usually on GitHub.</dd>
+<dt>Repository (repo)</dt><dd>A project folder together with its full history.</dd>
+<dt>Reset</dt><dd>Move a branch pointer to another commit, possibly discarding changes.</dd>
+<dt>Revert</dt><dd>Create a new commit that undoes an earlier one.</dd>
+<dt>Review</dt><dd>Feedback on a pull request, ending in comment, approve or request changes.</dd>
+<dt>Ruleset</dt><dd>GitHub's newer, more flexible alternative to branch protection rules.</dd>
+<dt>Runner</dt><dd>The machine that executes a GitHub Actions job.</dd>
+<dt>Secret</dt><dd>A credential such as an API key or password, which must never be committed.</dd>
+<dt>Secret scanning</dt><dd>GitHub's detection of leaked credentials in a repo.</dd>
+<dt>Semver</dt><dd>Semantic versioning, MAJOR.MINOR.PATCH, signalling how big a change is.</dd>
+<dt>Squash</dt><dd>Combine many commits into one, often when merging a PR.</dd>
+<dt>SSH key</dt><dd>A key pair used to prove who you are to GitHub without a password.</dd>
+<dt>Stage</dt><dd>Choose changes to include in the next commit with git add.</dd>
+<dt>Star</dt><dd>A bookmark and show of appreciation for a repo.</dd>
+<dt>Stash</dt><dd>Shelve uncommitted changes temporarily.</dd>
+<dt>Tag</dt><dd>A permanent label on a commit, often a version number.</dd>
+<dt>Trunk-based development</dt><dd>A workflow with very short-lived branches and frequent merges to main.</dd>
+<dt>Upstream</dt><dd>The original repo you forked, or the remote branch your local branch tracks.</dd>
+<dt>Workflow</dt><dd>A YAML file in .github/workflows that defines automation.</dd>
+<dt>Working tree</dt><dd>The actual files in your project folder that you edit.</dd>
+<dt>YAML</dt><dd>Indentation-based config format used by Actions and many other tools.</dd>
+</dl>
+</article>
+
+<div class="ch-actions" id="ch-actions" hidden>
+  <button class="btn" id="mark">Mark as read</button>
+  <div class="nav-btns"><a class="btn" id="prev" href="#">Previous</a><a class="btn primary" id="next" href="#">Next</a></div>
+</div>
+
+</div>
+</main>
+</div>
+</div>
+
+<script>
+(function(){
+  var KEY='github-guide-done-v1';
+  var done={};
+  try{done=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){done={}}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(done))}catch(e){}}
+
+  var arts=[].slice.call(document.querySelectorAll('article.ch'));
+  var content=document.getElementById('content');
+  var home=document.getElementById('home-view');
+  var actions=document.getElementById('ch-actions');
+  var toc=document.getElementById('toc');
+  var side=document.getElementById('side');
+  var menu=document.getElementById('menu');
+  var topTitle=document.getElementById('top-title');
+
+  var parts=[];var byPart={};
+  arts.forEach(function(a){
+    var p=a.dataset.part;
+    if(!byPart[p]){byPart[p]=[];parts.push(p)}
+    byPart[p].push(a);
+    var h=document.createElement('h2');h.className='ch-title';h.textContent=a.dataset.title;
+    var c=document.createElement('div');c.className='crumb';
+    a.insertBefore(h,a.firstChild);a.insertBefore(c,h);
+  });
+  arts.forEach(function(a,i){a.querySelector('.crumb').textContent=a.dataset.part+', chapter '+(byPart[a.dataset.part].indexOf(a)+1)+' of '+byPart[a.dataset.part].length});
+
+  function buildToc(filter){
+    toc.innerHTML='';var q=(filter||'').trim().toLowerCase();var any=false;
+    parts.forEach(function(p){
+      var list=byPart[p].filter(function(a){return !q||a.dataset.title.toLowerCase().indexOf(q)>-1||a.textContent.toLowerCase().indexOf(q)>-1});
+      if(!list.length)return;any=true;
+      var wrap=document.createElement('div');wrap.className='nav-part';
+      var h=document.createElement('h3');h.textContent=p;wrap.appendChild(h);
+      var ol=document.createElement('ol');
+      list.forEach(function(a){
+        var li=document.createElement('li');var l=document.createElement('a');
+        l.href='#'+a.id;l.dataset.id=a.id;if(done[a.id])l.className='done';
+        l.innerHTML='<span class="dot" aria-hidden="true"></span><span></span>';
+        l.lastChild.textContent=a.dataset.title;
+        li.appendChild(l);ol.appendChild(li);
+      });
+      wrap.appendChild(ol);toc.appendChild(wrap);
+    });
+    if(!any){toc.innerHTML='<p class="nav-empty">No chapters match. Try a shorter word.</p>'}
+    markCurrent();
+  }
+  function progress(){
+    var n=arts.filter(function(a){return done[a.id]}).length;
+    document.getElementById('prog-text').textContent=n+' of '+arts.length+' chapters read';
+    document.getElementById('prog-bar').style.width=(n/arts.length*100)+'%';
+  }
+  function buildParts(){
+    var el=document.getElementById('parts');el.innerHTML='';
+    parts.forEach(function(p){
+      var list=byPart[p];var n=list.filter(function(a){return done[a.id]}).length;
+      var a=document.createElement('a');a.className='part-card';a.href='#'+list[0].id;
+      a.innerHTML='<strong></strong><span></span>';
+      a.firstChild.textContent=p;a.lastChild.textContent=list.length+' chapters, '+n+' read';
+      el.appendChild(a);
+    });
+  }
+  var current=null;
+  function markCurrent(){
+    [].forEach.call(toc.querySelectorAll('a'),function(l){
+      if(current&&l.dataset.id===current.id)l.setAttribute('aria-current','page');else l.removeAttribute('aria-current');
+    });
+  }
+  function setMark(){
+    var b=document.getElementById('mark');
+    if(current&&done[current.id]){b.textContent='Read';b.classList.add('is-done')}
+    else{b.textContent='Mark as read';b.classList.remove('is-done')}
+  }
+  function route(){
+    var id=location.hash.slice(1);
+    var a=arts.filter(function(x){return x.id===id})[0];
+    arts.forEach(function(x){x.classList.remove('show')});
+    current=a||null;
+    if(!a){home.hidden=false;actions.hidden=true;topTitle.textContent='GitHub, explained';buildParts();document.title='GitHub, explained: a field guide'}
+    else{
+      home.hidden=true;a.classList.add('show');actions.hidden=false;
+      var i=arts.indexOf(a);
+      var prev=document.getElementById('prev'),next=document.getElementById('next');
+      if(i>0){prev.href='#'+arts[i-1].id;prev.style.visibility='visible'}else{prev.style.visibility='hidden'}
+      if(i<arts.length-1){next.href='#'+arts[i+1].id;next.textContent='Next';}else{next.href='#home';next.textContent='Back to start'}
+      topTitle.textContent=a.dataset.title;document.title=a.dataset.title+' | GitHub, explained';
+      setMark();
+    }
+    markCurrent();closeMenu();window.scrollTo(0,0);
+  }
+  document.getElementById('mark').addEventListener('click',function(){
+    if(!current)return;
+    if(done[current.id])delete done[current.id];else done[current.id]=1;
+    save();setMark();progress();
+    var l=toc.querySelector('a[data-id="'+current.id+'"]');if(l)l.classList.toggle('done',!!done[current.id]);
+  });
+  function closeMenu(){side.classList.remove('open');menu.setAttribute('aria-expanded','false');document.body.classList.remove('menu-open')}
+  menu.addEventListener('click',function(){var o=side.classList.toggle('open');menu.setAttribute('aria-expanded',o?'true':'false');document.body.classList.toggle('menu-open',o)});
+  document.getElementById('side-close').addEventListener('click',closeMenu);
+  side.addEventListener('click',function(e){var t=e.target;while(t&&t!==side){if(t.tagName==='A'){closeMenu();break}t=t.parentNode}});
+  document.addEventListener('click',function(e){if(side.classList.contains('open')&&!side.contains(e.target)&&e.target!==menu)closeMenu()});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeMenu()});
+  document.getElementById('search').addEventListener('input',function(e){buildToc(e.target.value)});
+  var gf=document.getElementById('gloss-filter');
+  gf.addEventListener('input',function(){
+    var q=gf.value.trim().toLowerCase();
+    [].forEach.call(document.querySelectorAll('#gloss dt'),function(dt){
+      var dd=dt.nextElementSibling;var hit=!q||(dt.textContent+' '+dd.textContent).toLowerCase().indexOf(q)>-1;
+      dt.hidden=!hit;dd.hidden=!hit;
+    });
+  });
+  window.addEventListener('hashchange',route);
+  buildToc('');progress();route();
+})();
+</script>
+</body>
+</html>
